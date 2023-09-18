@@ -31,16 +31,8 @@ instance Stackable Level where
   curr Dome = Left Top
   curr level = Right level
 
-data Space = Empty { level :: Level } | Occupied { level :: Level, worker ::  Worker } deriving (Eq)
+data Space = Empty { level :: Level } | Occupied { level :: Level, worker ::  Worker } deriving (Show, Eq)
 
-showGround = "|--------|\n|        |\n|        |\n|--------|"
-
-
-
-instance Show Space where
-  show (Empty Ground) = showGround 
-  show (Empty LevelOne) = "----+"
-  show (_) = "+++++"
 
 data Board = Board { grid :: (Map Position Space)
                    , workers :: (Map Worker Position)
