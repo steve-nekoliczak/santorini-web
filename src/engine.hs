@@ -94,4 +94,8 @@ placeWorker :: Board -> Worker -> Position -> Either MoveError Board
 placeWorker board worker newPosition =
   case ((workers board) ! worker) of
     Position _  -> Left $ MoveError "Can't place worker that's already on the board"
-    NotOnBoard  -> Right $ board { grid = insert newPosition (Occupied Ground worker) (grid board), workers = insert worker newPosition (workers board) }
+    NotOnBoard  ->
+      case newSpace of
+        Occupied _ _    -> Left $ MoveError "Can't place a worker where a worker is"
+        Empty newLevel  -> Right $ board { grid = insert newPosition (Occupied newLevel worker) (grid board), workers = insert worker newPosition (workers board) }
+      where newSpace = spaceOnBoard board newPosition
