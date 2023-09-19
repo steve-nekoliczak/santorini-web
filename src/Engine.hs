@@ -62,7 +62,7 @@ emptyBoard = Board grid workers
 
 
 spaceOnBoard :: Board -> Position -> Space
-spaceOnBoard (Board { grid = grid }) position = grid ! position
+spaceOnBoard (Board { grid }) position = grid ! position
 
 buildUp :: Board -> Position -> Either BuildError Board 
 buildUp board position =
