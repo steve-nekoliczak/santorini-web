@@ -7,4 +7,4 @@ spec :: Spec
 spec = do
   describe "emptyBoard" $ do
     it "returns a board with no buildings and no workers" $ do
-      True
+      pending
