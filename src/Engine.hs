@@ -12,6 +12,9 @@ module Engine
 import Prelude hiding (lookup)
 import Data.Map hiding (map)
 
+insertMany :: Ord k => [(k, a)] -> (Map k a) -> (Map k a)
+insertMany kvs m = Prelude.foldr (\(k, v) acc -> insert k v acc) m kvs
+
 newtype BuildError = BuildError String deriving (Show)
 newtype MoveError = MoveError String deriving (Show)
 
@@ -23,14 +26,12 @@ instance Show Position where
   show NotOnBoard = "Not on board"
   show (Position (XCoord x, YCoord y)) = x:(show y)
 
-data Worker = Worker { name :: String } deriving (Show, Eq, Ord)
-
-data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq)
-
 data Top = Top
 class Stackable a where
   step :: a -> Either Top a
   curr :: a -> Either Top a
+
+data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq)
 
 instance Stackable Level where
   step Ground = Right LevelOne
@@ -38,12 +39,14 @@ instance Stackable Level where
   step LevelTwo = Right LevelThree
   step LevelThree = Right Dome
   step Dome = Left Top
-
   curr Dome = Left Top
   curr level = Right level
 
-data Space = Empty { level :: Level } | Occupied { level :: Level, worker ::  Worker } deriving (Show, Eq)
+data Worker = Worker { name :: String } deriving (Show, Eq, Ord)
 
+data Space = Space { level :: Level
+                   , worker :: Maybe Worker
+                   } deriving (Show, Eq)
 
 data Board = Board { grid :: (Map Position Space)
                    , workers :: (Map Worker Position)
@@ -57,48 +60,47 @@ yCoords = [YCoord 1, YCoord 2, YCoord 3, YCoord 4, YCoord 5]
 
 emptyBoard :: Board 
 emptyBoard = Board grid workers
-  where grid = fromList [(Position (x, y), Empty Ground) | x <- xCoords, y <- yCoords]
+  where grid = fromList [(Position (x, y), Space Ground Nothing) | x <- xCoords, y <- yCoords]
         workers = fromList [(Worker "p1a", NotOnBoard), (Worker "p1b", NotOnBoard), (Worker "p2a", NotOnBoard), (Worker "p2b", NotOnBoard)]
-
 
 spaceOnBoard :: Board -> Position -> Space
 spaceOnBoard (Board { grid }) position = grid ! position
 
 buildUp :: Board -> Position -> Either BuildError Board 
-buildUp board position =
-  case spaceOnBoard board position of
-    Occupied _ _  -> Left $ BuildError "Can't build where a worker is"
-    Empty level   ->
-      case step level of
+buildUp board targetPosition =
+  let targetSpace = spaceOnBoard board targetPosition
+  in case worker targetSpace of
+    Just _              -> Left $ BuildError "Can't build where a worker is"
+    Nothing             ->
+      case step $ level targetSpace of
         Left Top        -> Left $ BuildError "Can't build on top of a dome"
-        Right newLevel  -> Right $ board { grid = newGrid }
-          where newGrid = insert position (Empty newLevel) (grid board)
-
-insertMany :: Ord k => [(k, a)] -> (Map k a) -> (Map k a)
-insertMany kvs m = Prelude.foldr (\(k, v) m -> insert k v m) m kvs
-
+        Right newLevel  -> Right $ board { grid = updatedGrid }
+          where updatedGrid = insert targetPosition (targetSpace { level = newLevel }) (grid board)
 
 moveWorker :: Board -> Worker -> Position -> Either MoveError Board
-moveWorker board worker newPosition =
-  case newSpace of
-    Occupied _ _        -> Left $ MoveError "Can't move where a worker is"
-    Empty newLevel      ->
-      case curr newLevel of
+moveWorker board workerToMove targetPosition =
+  let originPosition = (workers board) ! workerToMove
+      originSpace = spaceOnBoard board originPosition
+      targetSpace = spaceOnBoard board targetPosition
+  in case worker targetSpace of
+    Just _              -> Left $ MoveError "Can't move where a worker is"
+    Nothing             ->
+      case curr $ level targetSpace of
         Left Top        -> Left $ MoveError "Can't move on top of a dome"
-        Right newLevel  -> Right $ board { grid = newGrid, workers = insert worker newPosition (workers board) }
-          where newGrid = insertMany [oldSpaceEntry, newSpaceEntry] (grid board)
-                oldSpaceEntry = (oldPosition, Empty $ level oldSpace)
-                newSpaceEntry = (newPosition, Occupied newLevel worker)
-    where oldSpace = spaceOnBoard board oldPosition
-          newSpace = spaceOnBoard board newPosition
-          oldPosition = (workers board) ! worker
+        Right _         -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
+          where updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] (grid board)
+                updatedWorkers = insert workerToMove targetPosition (workers board)
+                updatedOriginSpace = (originPosition, originSpace { worker = Nothing })
+                updatedTargetSpace = (targetPosition, targetSpace { worker = Just workerToMove })
 
 placeWorker :: Board -> Worker -> Position -> Either MoveError Board
-placeWorker board worker newPosition =
-  case ((workers board) ! worker) of
+placeWorker board workerToPlace targetPosition =
+  case (workers board) ! workerToPlace of
     Position _  -> Left $ MoveError "Can't place worker that's already on the board"
     NotOnBoard  ->
-      case newSpace of
-        Occupied _ _    -> Left $ MoveError "Can't place a worker where a worker is"
-        Empty newLevel  -> Right $ board { grid = insert newPosition (Occupied newLevel worker) (grid board), workers = insert worker newPosition (workers board) }
-      where newSpace = spaceOnBoard board newPosition
+      case worker targetSpace of
+        Just _          -> Left $ MoveError "Can't place a worker where a worker is"
+        Nothing         -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
+      where updatedGrid = insert targetPosition (targetSpace { worker = Just workerToPlace }) (grid board)
+            updatedWorkers = insert workerToPlace targetPosition (workers board)
+            targetSpace = spaceOnBoard board targetPosition
