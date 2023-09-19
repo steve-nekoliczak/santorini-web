@@ -2,7 +2,6 @@ module EngineSpec (spec) where
 
 import Test.Hspec
 import Engine
--- TODO: Figure out how to fix this or what to use instead of factories.
 import BoardFactory
 
 spec :: Spec
