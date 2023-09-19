@@ -51,7 +51,9 @@ executables:
 tests:
   santorini-cli-test:
     main:                Spec.hs
-    source-dirs:         test
+    source-dirs:
+      - test
+      - test/factory
     ghc-options:
     - -threaded
     - -rtsopts

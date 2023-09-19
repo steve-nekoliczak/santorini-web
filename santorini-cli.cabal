@@ -56,9 +56,11 @@ test-suite santorini-cli-test
   main-is: Spec.hs
   other-modules:
       EngineSpec
+      BoardFactory
       Paths_santorini_cli
   hs-source-dirs:
       test
+      test/factory
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

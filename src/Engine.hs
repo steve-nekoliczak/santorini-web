@@ -1,5 +1,12 @@
 module Engine
-  (
+  ( XCoord (..)
+  , YCoord (..)
+  , Position (..)
+  , Level (..)
+  , Space (..)
+  , Worker (..)
+  , Board (..)
+  , emptyBoard
   ) where
 
 import Prelude hiding (lookup)
