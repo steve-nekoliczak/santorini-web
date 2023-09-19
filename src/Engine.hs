@@ -96,8 +96,8 @@ moveWorker board workerToMove targetPosition =
 placeWorker :: Board -> Worker -> Position -> Either MoveError Board
 placeWorker board workerToPlace targetPosition =
   case (workers board) ! workerToPlace of
-    Position _  -> Left $ MoveError "Can't place worker that's already on the board"
-    NotOnBoard  ->
+    Position _          -> Left $ MoveError "Can't place worker that's already on the board"
+    NotOnBoard          ->
       case worker targetSpace of
         Just _          -> Left $ MoveError "Can't place a worker where a worker is"
         Nothing         -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
