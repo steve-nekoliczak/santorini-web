@@ -1,3 +1,7 @@
+module Engine
+  (
+  ) where
+
 import Prelude hiding (lookup)
 import Data.Map hiding (map)
 
