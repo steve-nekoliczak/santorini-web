@@ -9,9 +9,8 @@ version:        0.1.0.0
 description:    Please see the README on GitHub at <https://github.com/steve-nekoliczak/santorini-cli#readme>
 homepage:       https://github.com/steve-nekoliczak/santorini-cli#readme
 bug-reports:    https://github.com/steve-nekoliczak/santorini-cli/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2023 Author name here
+author:         Steve Nekoliczak
+maintainer:     steve.nekoliczak@protonmail.com
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
