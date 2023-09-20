@@ -95,7 +95,8 @@ moveWorker board workerToMove targetPosition =
 
 placeWorker :: Board -> Worker -> Position -> Either MoveError Board
 placeWorker board workerToPlace targetPosition =
-  case (workers board) ! workerToPlace of
+  let targetSpace = spaceOnBoard board targetPosition
+  in case (workers board) ! workerToPlace of
     Position _          -> Left $ MoveError "Can't place worker that's already on the board"
     NotOnBoard          ->
       case worker targetSpace of
@@ -103,4 +104,3 @@ placeWorker board workerToPlace targetPosition =
         Nothing         -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
       where updatedGrid = insert targetPosition (targetSpace { worker = Just workerToPlace }) (grid board)
             updatedWorkers = insert workerToPlace targetPosition (workers board)
-            targetSpace = spaceOnBoard board targetPosition
