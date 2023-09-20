@@ -11,9 +11,7 @@ module Engine
 
 import Prelude hiding (lookup)
 import Data.Map hiding (map)
-
-insertMany :: Ord k => [(k, a)] -> (Map k a) -> (Map k a)
-insertMany kvs m = Prelude.foldr (\(k, v) acc -> insert k v acc) m kvs
+import Lib
 
 newtype BuildError = BuildError String deriving (Show)
 newtype MoveError = MoveError String deriving (Show)
