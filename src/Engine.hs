@@ -7,6 +7,7 @@ module Engine
   , Worker (..)
   , Board (..)
   , emptyBoard
+  , spaceOnBoard
   ) where
 
 import Prelude hiding (lookup)
