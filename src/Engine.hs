@@ -17,13 +17,9 @@ import Lib
 newtype BuildError = BuildError String deriving (Show)
 newtype MoveError = MoveError String deriving (Show)
 
-newtype XCoord = XCoord Char deriving (Show, Eq, Ord)
-newtype YCoord = YCoord Int deriving (Show, Eq, Ord)
-data Position = NotOnBoard | Position (XCoord, YCoord) deriving (Eq, Ord)
-
-instance Show Position where
-  show NotOnBoard = "Not on board"
-  show (Position (XCoord x, YCoord y)) = x:(show y)
+data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
+data YCoord = Y1 | Y2 | Y3 | Y4 | Y5 deriving (Show, Eq, Ord, Enum)
+data Position = NotOnBoard | Position (XCoord, YCoord) deriving (Show, Eq, Ord)
 
 data Top = Top
 class Stackable a where
@@ -51,15 +47,9 @@ data Board = Board { grid :: (Map Position Space)
                    , workers :: (Map Worker Position)
                    }  deriving (Show, Eq)
 
-xCoords :: [XCoord]
-xCoords = [XCoord 'A', XCoord 'B', XCoord 'C', XCoord 'D', XCoord 'E']
-
-yCoords :: [YCoord]
-yCoords = [YCoord 1, YCoord 2, YCoord 3, YCoord 4, YCoord 5]
-
 emptyBoard :: Board 
 emptyBoard = Board grid workers
-  where grid = fromList [(Position (x, y), Space Ground Nothing) | x <- xCoords, y <- yCoords]
+  where grid = fromList [(Position (x, y), Space Ground Nothing) | x <- [XA .. XE], y <- [Y1 .. Y5]]
         workers = fromList [(Worker "p1a", NotOnBoard), (Worker "p1b", NotOnBoard), (Worker "p2a", NotOnBoard), (Worker "p2b", NotOnBoard)]
 
 spaceOnBoard :: Board -> Position -> Space

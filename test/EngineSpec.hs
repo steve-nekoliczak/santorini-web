@@ -13,20 +13,20 @@ spec = do
 
   describe "spaceOnBoard" $ do
     let gridChanges =
-          [ (Position (XCoord 'A', YCoord 1), Space LevelOne (Just $ Worker "p1a"))
-          , (Position (XCoord 'C', YCoord 2), Space LevelThree (Just $ Worker "p2b"))
-          , (Position (XCoord 'C', YCoord 4), Space LevelTwo Nothing)
-          , (Position (XCoord 'D', YCoord 5), Space Dome Nothing)
+          [ (Position (XA, Y1), Space LevelOne (Just $ Worker "p1a"))
+          , (Position (XC, Y2), Space LevelThree (Just $ Worker "p2b"))
+          , (Position (XC, Y4), Space LevelTwo Nothing)
+          , (Position (XD, Y5), Space Dome Nothing)
           ]
     let modifiedGrid = insertMany gridChanges (grid emptyBoardFactory)
     let modifiedBoard = emptyBoardFactory { grid = modifiedGrid }
 
     it "returns the space at the specified position" $ do
-      spaceOnBoard modifiedBoard (Position (XCoord 'A', YCoord 1))
+      spaceOnBoard modifiedBoard (Position (XA, Y1))
         `shouldBe` Space LevelOne (Just $ Worker "p1a")
-      spaceOnBoard modifiedBoard (Position (XCoord 'C', YCoord 2))
+      spaceOnBoard modifiedBoard (Position (XC, Y2))
         `shouldBe` Space LevelThree (Just $ Worker "p2b")
-      spaceOnBoard modifiedBoard (Position (XCoord 'C', YCoord 4))
+      spaceOnBoard modifiedBoard (Position (XC, Y4))
         `shouldBe` Space LevelTwo Nothing
-      spaceOnBoard modifiedBoard (Position (XCoord 'D', YCoord 5))
+      spaceOnBoard modifiedBoard (Position (XD, Y5))
         `shouldBe` Space Dome Nothing
