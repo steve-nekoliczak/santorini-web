@@ -36,7 +36,7 @@ data Space = Space { level :: Level
 
 data Board = Board { grid :: (Map Position Space)
                    , workers :: (Map Worker Position)
-                   }  deriving (Show, Eq)
+                   } deriving (Show, Eq)
 
 emptyBoard :: Board 
 emptyBoard = Board grid workers
@@ -49,38 +49,32 @@ spaceOnBoard (Board { grid }) position = grid ! position
 buildUp :: Board -> Position -> Either BuildError Board 
 buildUp board targetPosition =
   let targetSpace = spaceOnBoard board targetPosition
-  in case targetSpace.worker of
-    JustWorker _        -> Left $ BuildError "Can't build where a worker is"
-    NoWorker            ->
-      case targetSpace.level of
-        Dome            -> Left $ BuildError "Can't build on top of a dome"
-        targetLevel     -> Right $ board { grid = updatedGrid }
-          where updatedGrid = insert targetPosition (targetSpace { level = succ targetLevel }) board.grid
+  in case (targetSpace.worker, targetSpace.level) of
+       (JustWorker _, _)          -> Left $ BuildError "Can't build where a worker is"
+       (NoWorker, Dome)           -> Left $ BuildError "Can't build on top of a dome"
+       (NoWorker, targetLevel)    -> Right $ board { grid = updatedGrid }
+         where updatedGrid = insert targetPosition (targetSpace { level = succ targetLevel }) board.grid
 
 moveWorker :: Board -> Worker -> Position -> Either MoveError Board
 moveWorker board workerToMove targetPosition =
   let originPosition = board.workers ! workerToMove
       originSpace = spaceOnBoard board originPosition
       targetSpace = spaceOnBoard board targetPosition
-  in case targetSpace.worker of
-    JustWorker _        -> Left $ MoveError "Can't move where a worker is"
-    NoWorker            ->
-      case targetSpace.level of
-        Dome            -> Left $ MoveError "Can't move on top of a dome"
-        _               -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
-          where updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
-                updatedWorkers = insert workerToMove targetPosition board.workers
-                updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
-                updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+      updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
+      updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+      updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
+      updatedWorkers = insert workerToMove targetPosition board.workers
+  in case (targetSpace.worker, targetSpace.level) of
+       (JustWorker _, _)          -> Left $ MoveError "Can't move where a worker is"
+       (NoWorker, Dome)           -> Left $ MoveError "Can't move on top of a dome"
+       (NoWorker, _)              -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
 
 placeWorker :: Board -> Worker -> Position -> Either MoveError Board
 placeWorker board workerToPlace targetPosition =
   let targetSpace = spaceOnBoard board targetPosition
-  in case board.workers ! workerToPlace of
-    Position _          -> Left $ MoveError "Can't place worker that's already on the board"
-    NotOnBoard          ->
-      case targetSpace.worker of
-        JustWorker _    -> Left $ MoveError "Can't place a worker where a worker is"
-        NoWorker        -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
-      where updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
-            updatedWorkers = insert workerToPlace targetPosition board.workers
+      updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
+      updatedWorkers = insert workerToPlace targetPosition board.workers
+  in case (board.workers ! workerToPlace, targetSpace.worker) of
+       (Position _, _)            -> Left $ MoveError "Can't place worker that's already on the board"
+       (NotOnBoard, JustWorker _) -> Left $ MoveError "Can't place a worker where a worker is"
+       (NotOnBoard, NoWorker)     -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
