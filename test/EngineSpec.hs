@@ -3,7 +3,7 @@ module EngineSpec (spec) where
 import Test.Hspec
 import Engine
 import BoardFactory
-import Lib
+import Data.Either
 
 spec :: Spec
 spec = do
@@ -18,11 +18,25 @@ spec = do
           , (Position (XC, Y4), Space LevelTwo NoWorker)
           , (Position (XD, Y5), Space Dome NoWorker)
           ]
-    let modifiedGrid = insertMany gridChanges emptyBoardFactory.grid
-    let modifiedBoard = emptyBoardFactory { grid = modifiedGrid }
+    let modifiedBoard = modifyEmptyBoard gridChanges
 
     it "returns the space at the specified position" $ do
       spaceOnBoard modifiedBoard (Position (XA, Y1)) `shouldBe` Space LevelOne (JustWorker IvoryMan)
       spaceOnBoard modifiedBoard (Position (XC, Y2)) `shouldBe` Space LevelThree (JustWorker BlueWoman)
       spaceOnBoard modifiedBoard (Position (XC, Y4)) `shouldBe` Space LevelTwo NoWorker
       spaceOnBoard modifiedBoard (Position (XD, Y5)) `shouldBe` Space Dome NoWorker
+
+  describe "buildUp" $ do
+    it "builds on a non-dome space" $ do
+      let modifiedBoard = buildUp emptyBoardFactory (Position (XA, Y1))
+
+      isRight modifiedBoard `shouldBe` True
+      spaceOnBoard (fromRight emptyBoardFactory modifiedBoard) (Position (XA, Y1)) `shouldBe` Space LevelOne NoWorker
+
+    it "returns an error when building on a dome" $ do
+      let position = Position (XD, Y5)
+      let modifiedBoard = modifyEmptyBoard [(position, Space Dome NoWorker)]
+      let errorBoard = buildUp modifiedBoard position
+
+      isLeft errorBoard `shouldBe` True
+      errorBoard `shouldBe` (Left $ BuildError "Can't build on top of a dome")

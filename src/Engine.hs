@@ -10,16 +10,17 @@ module Engine
   , Worker (..)
   , MaybeWorker (..)
   , Board (..)
+  , BoardError (..)
   , emptyBoard
   , spaceOnBoard
+  , buildUp
   ) where
 
 import Prelude hiding (lookup)
 import Data.Map hiding (map)
 import Lib
 
-newtype BuildError = BuildError String deriving (Show)
-newtype MoveError = MoveError String deriving (Show)
+data BoardError = BuildError String | MoveError String | OccupiedError String deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
 data YCoord = Y1 | Y2 | Y3 | Y4 | Y5 deriving (Show, Eq, Ord, Enum)
@@ -46,16 +47,25 @@ emptyBoard = Board grid workers
 spaceOnBoard :: Board -> Position -> Space
 spaceOnBoard (Board { grid }) position = grid ! position
 
-buildUp :: Board -> Position -> Either BuildError Board 
-buildUp board targetPosition =
-  let targetSpace = spaceOnBoard board targetPosition
-  in case (targetSpace.worker, targetSpace.level) of
-       (JustWorker _, _)          -> Left $ BuildError "Can't build where a worker is"
-       (NoWorker, Dome)           -> Left $ BuildError "Can't build on top of a dome"
-       (NoWorker, targetLevel)    -> Right $ board { grid = updatedGrid }
-         where updatedGrid = insert targetPosition (targetSpace { level = succ targetLevel }) board.grid
+spaceHasNoWorker :: Board -> Space -> Either BoardError Board
+spaceHasNoWorker board space = case space.worker of
+                                 JustWorker _   -> Left $ OccupiedError "Worker exists in this space"
+                                 NoWorker       -> Right board
 
-moveWorker :: Board -> Worker -> Position -> Either MoveError Board
+spaceCanBuildUp :: Board -> Space -> Either BoardError Board
+spaceCanBuildUp board space = case space.level of
+                                Dome      -> Left $ BuildError "Can't build on top of a dome"
+                                otherwise -> Right board
+
+buildUp :: Board -> Position -> Either BoardError Board
+buildUp board targetPosition = do
+  let targetSpace = spaceOnBoard board targetPosition
+  let updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
+  _ <- spaceHasNoWorker board targetSpace
+  _ <- spaceCanBuildUp board targetSpace
+  Right board { grid = updatedGrid }
+
+moveWorker :: Board -> Worker -> Position -> Either BoardError Board
 moveWorker board workerToMove targetPosition =
   let originPosition = board.workers ! workerToMove
       originSpace = spaceOnBoard board originPosition
@@ -69,7 +79,7 @@ moveWorker board workerToMove targetPosition =
        (NoWorker, Dome)           -> Left $ MoveError "Can't move on top of a dome"
        (NoWorker, _)              -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
 
-placeWorker :: Board -> Worker -> Position -> Either MoveError Board
+placeWorker :: Board -> Worker -> Position -> Either BoardError Board
 placeWorker board workerToPlace targetPosition =
   let targetSpace = spaceOnBoard board targetPosition
       updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
