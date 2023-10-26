@@ -4,6 +4,7 @@ import Test.Hspec
 import Engine
 import BoardFactory
 import Data.Either
+import Data.Map hiding (map)
 
 spec :: Spec
 spec = do
@@ -40,3 +41,11 @@ spec = do
 
       isLeft errorBoard `shouldBe` True
       errorBoard `shouldBe` (Left $ BuildError "Can't build on top of a dome")
+
+  describe "placeWorker" $ do
+    it "updates the board's grid map and workers map" $ do
+      let position = (Position (XC, Y4))
+      let modifiedBoard = placeWorker emptyBoard BlueMan position
+
+      spaceOnBoard (fromRight emptyBoardFactory modifiedBoard) position `shouldBe` Space Ground (JustWorker BlueMan)
+      (fromRight emptyBoardFactory modifiedBoard).workers ! BlueMan `shouldBe` position

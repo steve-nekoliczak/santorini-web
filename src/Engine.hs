@@ -14,6 +14,7 @@ module Engine
   , emptyBoard
   , spaceOnBoard
   , buildUp
+  , placeWorker
   ) where
 
 import Prelude hiding (lookup)
@@ -49,7 +50,37 @@ emptyBoard = Board grid workers
         workers = fromList [(BlueMan, NotOnBoard), (BlueWoman, NotOnBoard), (IvoryMan, NotOnBoard), (IvoryWoman, NotOnBoard)]
 
 spaceOnBoard :: Board -> Position -> Space
-spaceOnBoard (Board { grid }) position = grid ! position
+spaceOnBoard board position = board.grid ! position
+
+buildUp :: Board -> Position -> Either BoardError Board
+buildUp board targetPosition = do
+  let targetSpace = spaceOnBoard board targetPosition
+  let updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
+  _ <- spaceHasNoWorker board targetSpace
+  _ <- spaceCanBuildUp board targetSpace
+  Right board { grid = updatedGrid }
+
+placeWorker :: Board -> Worker -> Position -> Either BoardError Board
+placeWorker board workerToPlace targetPosition = do
+  let targetSpace = spaceOnBoard board targetPosition
+  let updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
+  let updatedWorkers = insert workerToPlace targetPosition board.workers
+  _ <- workerCanBePlaced board workerToPlace
+  _ <- spaceHasNoWorker board targetSpace
+  Right $ board { grid = updatedGrid, workers = updatedWorkers }
+
+moveWorker :: Board -> Worker -> Position -> Either BoardError Board
+moveWorker board workerToMove targetPosition = do
+  let targetSpace = spaceOnBoard board targetPosition
+  let originPosition = board.workers ! workerToMove
+  let originSpace = spaceOnBoard board originPosition
+  let updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
+  let updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+  let updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
+  let updatedWorkers = insert workerToMove targetPosition board.workers
+  _ <- spaceHasNoWorker board targetSpace
+  _ <- spaceCanBeMovedInto board targetSpace
+  Right $ board { grid = updatedGrid, workers = updatedWorkers }
 
 spaceHasNoWorker :: Board -> Space -> Either BoardError Board
 spaceHasNoWorker board space = case space.worker of
@@ -68,33 +99,3 @@ workerCanBePlaced :: Board -> Worker -> Either BoardError Board
 workerCanBePlaced board worker = case board.workers ! worker of
                                    Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
                                    NotOnBoard -> Right board
-
-buildUp :: Board -> Position -> Either BoardError Board
-buildUp board targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
-  _ <- spaceHasNoWorker board targetSpace
-  _ <- spaceCanBuildUp board targetSpace
-  Right board { grid = updatedGrid }
-
-moveWorker :: Board -> Worker -> Position -> Either BoardError Board
-moveWorker board workerToMove targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let originPosition = board.workers ! workerToMove
-  let originSpace = spaceOnBoard board originPosition
-  let updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
-  let updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
-  let updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
-  let updatedWorkers = insert workerToMove targetPosition board.workers
-  _ <- spaceHasNoWorker board targetSpace
-  _ <- spaceCanBeMovedInto board targetSpace
-  Right $ board { grid = updatedGrid, workers = updatedWorkers }
-
-placeWorker :: Board -> Worker -> Position -> Either BoardError Board
-placeWorker board workerToPlace targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
-  let updatedWorkers = insert workerToPlace targetPosition board.workers
-  _ <- workerCanBePlaced board workerToPlace
-  _ <- spaceHasNoWorker board targetSpace
-  Right $ board { grid = updatedGrid, workers = updatedWorkers }
