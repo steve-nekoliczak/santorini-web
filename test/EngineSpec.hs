@@ -43,7 +43,7 @@ spec = do
       errorBoard `shouldBe` (Left $ BuildError "Can't build on top of a dome")
 
   describe "placeWorker" $ do
-    it "updates the board's grid map and workers map" $ do
+    it "puts a worker on the board and updates the board's grid map and workers map" $ do
       let position = (Position (XC, Y4))
       let modifiedBoard = placeWorker emptyBoardFactory BlueMan position
 
