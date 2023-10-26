@@ -20,7 +20,11 @@ import Prelude hiding (lookup)
 import Data.Map hiding (map)
 import Lib
 
-data BoardError = BuildError String | MoveError String | OccupiedError String deriving (Show, Eq)
+data BoardError = BuildError String
+                | MoveError String
+                | OccupiedError String
+                | AlreadyPlacedWorkerError String
+                deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
 data YCoord = Y1 | Y2 | Y3 | Y4 | Y5 deriving (Show, Eq, Ord, Enum)
@@ -57,6 +61,14 @@ spaceCanBuildUp board space = case space.level of
                                 Dome      -> Left $ BuildError "Can't build on top of a dome"
                                 otherwise -> Right board
 
+spaceCanBeMovedInto :: Board -> Space -> Either BoardError Board
+spaceCanBeMovedInto = spaceCanBuildUp
+
+workerCanBePlaced :: Board -> Worker -> Either BoardError Board
+workerCanBePlaced board worker = case board.workers ! worker of
+                                   Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
+                                   NotOnBoard -> Right board
+
 buildUp :: Board -> Position -> Either BoardError Board
 buildUp board targetPosition = do
   let targetSpace = spaceOnBoard board targetPosition
@@ -66,25 +78,23 @@ buildUp board targetPosition = do
   Right board { grid = updatedGrid }
 
 moveWorker :: Board -> Worker -> Position -> Either BoardError Board
-moveWorker board workerToMove targetPosition =
+moveWorker board workerToMove targetPosition = do
+  let targetSpace = spaceOnBoard board targetPosition
   let originPosition = board.workers ! workerToMove
-      originSpace = spaceOnBoard board originPosition
-      targetSpace = spaceOnBoard board targetPosition
-      updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
-      updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
-      updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
-      updatedWorkers = insert workerToMove targetPosition board.workers
-  in case (targetSpace.worker, targetSpace.level) of
-       (JustWorker _, _)          -> Left $ MoveError "Can't move where a worker is"
-       (NoWorker, Dome)           -> Left $ MoveError "Can't move on top of a dome"
-       (NoWorker, _)              -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
+  let originSpace = spaceOnBoard board originPosition
+  let updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
+  let updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+  let updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
+  let updatedWorkers = insert workerToMove targetPosition board.workers
+  _ <- spaceHasNoWorker board targetSpace
+  _ <- spaceCanBeMovedInto board targetSpace
+  Right $ board { grid = updatedGrid, workers = updatedWorkers }
 
 placeWorker :: Board -> Worker -> Position -> Either BoardError Board
-placeWorker board workerToPlace targetPosition =
+placeWorker board workerToPlace targetPosition = do
   let targetSpace = spaceOnBoard board targetPosition
-      updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
-      updatedWorkers = insert workerToPlace targetPosition board.workers
-  in case (board.workers ! workerToPlace, targetSpace.worker) of
-       (Position _, _)            -> Left $ MoveError "Can't place worker that's already on the board"
-       (NotOnBoard, JustWorker _) -> Left $ MoveError "Can't place a worker where a worker is"
-       (NotOnBoard, NoWorker)     -> Right $ board { grid = updatedGrid, workers = updatedWorkers }
+  let updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
+  let updatedWorkers = insert workerToPlace targetPosition board.workers
+  _ <- workerCanBePlaced board workerToPlace
+  _ <- spaceHasNoWorker board targetSpace
+  Right $ board { grid = updatedGrid, workers = updatedWorkers }
