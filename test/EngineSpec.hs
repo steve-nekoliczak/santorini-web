@@ -45,7 +45,7 @@ spec = do
   describe "placeWorker" $ do
     it "updates the board's grid map and workers map" $ do
       let position = (Position (XC, Y4))
-      let modifiedBoard = placeWorker emptyBoard BlueMan position
+      let modifiedBoard = placeWorker emptyBoardFactory BlueMan position
 
       spaceOnBoard (fromRight emptyBoardFactory modifiedBoard) position `shouldBe` Space Ground (JustWorker BlueMan)
       (fromRight emptyBoardFactory modifiedBoard).workers ! BlueMan `shouldBe` position
