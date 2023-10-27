@@ -91,7 +91,7 @@ spaceHasNoWorker board space = case space.worker of
 spaceCanBuildUp :: Board -> Space -> Either BoardError Board
 spaceCanBuildUp board space = case space.level of
                                 Dome      -> Left $ BuildError "Can't build on top of a dome"
-                                otherwise -> Right board
+                                _         -> Right board
 
 spaceCanBeMovedInto :: Board -> Space -> Either BoardError Board
 spaceCanBeMovedInto = spaceCanBuildUp
