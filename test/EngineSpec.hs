@@ -49,3 +49,14 @@ spec = do
 
       spaceOnBoard (fromRight emptyBoardFactory modifiedBoard) position `shouldBe` Space Ground (JustWorker BlueMan)
       (fromRight emptyBoardFactory modifiedBoard).workers ! BlueMan `shouldBe` position
+
+  describe "moveWorker" $ do
+    it "moves a worker to another space of the same level" $ do
+      let originPosition = (Position (XC, Y4))
+      let targetPosition = (Position (XC, Y5))
+      let modifiedBoard = placeWorker emptyBoardFactory BlueMan originPosition
+      let boardAfterMove = moveWorker (fromRight emptyBoardFactory modifiedBoard) BlueMan targetPosition
+
+      spaceOnBoard (fromRight emptyBoardFactory boardAfterMove) originPosition `shouldBe` Space Ground NoWorker
+      spaceOnBoard (fromRight emptyBoardFactory boardAfterMove) targetPosition `shouldBe` Space Ground (JustWorker BlueMan)
+      (fromRight emptyBoardFactory boardAfterMove).workers ! BlueMan `shouldBe` targetPosition

@@ -15,6 +15,7 @@ module Engine
   , spaceOnBoard
   , buildUp
   , placeWorker
+  , moveWorker
   ) where
 
 import Prelude hiding (lookup)
