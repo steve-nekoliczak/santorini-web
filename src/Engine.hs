@@ -50,53 +50,53 @@ emptyBoard = Board grid workers
   where grid = fromList [(Position (x, y), Space Ground NoWorker) | x <- [XA .. XE], y <- [Y1 .. Y5]]
         workers = fromList [(BlueMan, NotOnBoard), (BlueWoman, NotOnBoard), (IvoryMan, NotOnBoard), (IvoryWoman, NotOnBoard)]
 
-spaceOnBoard :: Board -> Position -> Space
-spaceOnBoard board position = board.grid ! position
+spaceOnBoard :: Position -> Board -> Space
+spaceOnBoard position board = board.grid ! position
 
-buildUp :: Board -> Position -> Either BoardError Board
-buildUp board targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
-  _ <- spaceHasNoWorker board targetSpace
-  _ <- spaceCanBuildUp board targetSpace
-  Right board { grid = updatedGrid }
+buildUp :: Position -> Board -> Either BoardError Board
+buildUp targetPosition board =
+  spaceHasNoWorker targetSpace board
+  >> spaceCanBuildUp targetSpace board
+  >> Right (board { grid = updatedGrid })
+  where targetSpace = spaceOnBoard targetPosition board
+        updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
 
-placeWorker :: Board -> Worker -> Position -> Either BoardError Board
-placeWorker board workerToPlace targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
-  let updatedWorkers = insert workerToPlace targetPosition board.workers
-  _ <- workerCanBePlaced board workerToPlace
-  _ <- spaceHasNoWorker board targetSpace
-  Right $ board { grid = updatedGrid, workers = updatedWorkers }
+placeWorker :: Worker -> Position -> Board -> Either BoardError Board
+placeWorker workerToPlace targetPosition board =
+  workerCanBePlaced workerToPlace board
+  >> spaceHasNoWorker targetSpace board
+  >> Right (board { grid = updatedGrid, workers = updatedWorkers })
+  where targetSpace = spaceOnBoard targetPosition board
+        updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
+        updatedWorkers = insert workerToPlace targetPosition board.workers
 
-moveWorker :: Board -> Worker -> Position -> Either BoardError Board
-moveWorker board workerToMove targetPosition = do
-  let targetSpace = spaceOnBoard board targetPosition
-  let originPosition = board.workers ! workerToMove
-  let originSpace = spaceOnBoard board originPosition
-  let updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
-  let updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
-  let updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
-  let updatedWorkers = insert workerToMove targetPosition board.workers
-  _ <- spaceHasNoWorker board targetSpace
-  _ <- spaceCanBeMovedInto board targetSpace
-  Right $ board { grid = updatedGrid, workers = updatedWorkers }
+moveWorker :: Worker -> Position -> Board -> Either BoardError Board
+moveWorker workerToMove targetPosition board =
+  spaceHasNoWorker targetSpace board
+  >> spaceCanBeMovedInto targetSpace board
+  >> Right (board { grid = updatedGrid, workers = updatedWorkers })
+  where targetSpace = spaceOnBoard targetPosition board
+        originPosition = board.workers ! workerToMove
+        originSpace = spaceOnBoard originPosition board
+        updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
+        updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+        updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
+        updatedWorkers = insert workerToMove targetPosition board.workers
 
-spaceHasNoWorker :: Board -> Space -> Either BoardError Board
-spaceHasNoWorker board space = case space.worker of
+spaceHasNoWorker :: Space -> Board -> Either BoardError Board
+spaceHasNoWorker space board = case space.worker of
                                  JustWorker _   -> Left $ OccupiedError "Worker exists in this space"
                                  NoWorker       -> Right board
 
-spaceCanBuildUp :: Board -> Space -> Either BoardError Board
-spaceCanBuildUp board space = case space.level of
+spaceCanBuildUp :: Space -> Board -> Either BoardError Board
+spaceCanBuildUp space board = case space.level of
                                 Dome      -> Left $ BuildError "Can't build on top of a dome"
                                 _         -> Right board
 
-spaceCanBeMovedInto :: Board -> Space -> Either BoardError Board
+spaceCanBeMovedInto :: Space -> Board -> Either BoardError Board
 spaceCanBeMovedInto = spaceCanBuildUp
 
-workerCanBePlaced :: Board -> Worker -> Either BoardError Board
-workerCanBePlaced board worker = case board.workers ! worker of
+workerCanBePlaced :: Worker -> Board -> Either BoardError Board
+workerCanBePlaced worker board = case board.workers ! worker of
                                    Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
                                    NotOnBoard -> Right board
