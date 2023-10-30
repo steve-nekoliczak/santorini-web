@@ -1,7 +1,10 @@
-module BoardFactory (emptyBoardFactory) where
+{-# LANGUAGE OverloadedRecordDot #-}
+
+module BoardFactory (emptyBoardFactory, modifyEmptyBoard) where
 
 import Data.Map
 import Engine
+import Lib
 
 emptyBoardFactory :: Board
 emptyBoardFactory = Board emptyGrid unplacedWorkers
@@ -40,3 +43,7 @@ unplacedWorkers = fromList [ (BlueMan, NotOnBoard)
                            , (IvoryMan, NotOnBoard)
                            , (IvoryWoman, NotOnBoard)
                            ]
+
+modifyEmptyBoard :: [(Position, Space)] -> Board
+modifyEmptyBoard gridChanges = emptyBoardFactory { grid = modifiedGrid }
+  where modifiedGrid = insertMany gridChanges (emptyBoardFactory.grid)
