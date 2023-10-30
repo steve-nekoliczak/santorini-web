@@ -60,3 +60,53 @@ spec = do
       spaceOnBoard originPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground NoWorker
       spaceOnBoard targetPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground (JustWorker BlueMan)
       (fromRight emptyBoardFactory boardAfterMove).workers ! BlueMan `shouldBe` targetPosition
+
+  describe "spaceIsAdjacent" $ do
+    let targetSpaceNotAdjacentErrorMessage = "Target space needs to be adjacent to worker"
+
+    it "returns board if the target space is one space away in the X plane" $ do
+      let position = (Position (XA, Y4))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XB, Y4))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` modifiedBoard
+
+    it "returns board if the target space is one space away in the Y plane" $ do
+      let position = (Position (XD, Y4))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XD, Y5))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` modifiedBoard
+
+    it "returns board if the target space is one space away both in the X place and Y plane" $ do
+      let position = (Position (XB, Y2))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XA, Y1))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` modifiedBoard
+
+    it "returns a TargetSpaceNotAdjacentError if the target space is not adjacent in the X plane" $ do
+      let position = (Position (XB, Y2))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XD, Y1))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Left (TargetSpaceNotAdjacentError targetSpaceNotAdjacentErrorMessage)
+
+    it "returns a TargetSpaceNotAdjacentError if the target space is not adjacent in the Y plane" $ do
+      let position = (Position (XB, Y3))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XB, Y5))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Left (TargetSpaceNotAdjacentError targetSpaceNotAdjacentErrorMessage)
+
+    it "returns a TargetSpaceNotAdjacentError if the target space is not adjacent in both the X plane and Y plane" $ do
+      let position = (Position (XC, Y3))
+      let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
+      let targetPosition = (Position (XE, Y5))
+
+      spaceIsAdjacent BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Left (TargetSpaceNotAdjacentError targetSpaceNotAdjacentErrorMessage)
+
+    it "returns a WorkerNotYetPlacedError if the worker has not been placed yet" $ do
+      let targetPosition = (Position (XE, Y5))
+
+      spaceIsAdjacent BlueMan targetPosition emptyBoardFactory `shouldBe` Left (WorkerNotYetPlacedError "Worker needs to be placed to check for adjacency")

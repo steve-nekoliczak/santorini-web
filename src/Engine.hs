@@ -16,6 +16,7 @@ module Engine
   , buildUp
   , placeWorker
   , moveWorker
+  , spaceIsAdjacent
   ) where
 
 import Prelude hiding (lookup)
@@ -26,6 +27,8 @@ data BoardError = BuildError String
                 | MoveError String
                 | OccupiedError String
                 | AlreadyPlacedWorkerError String
+                | WorkerNotYetPlacedError String
+                | TargetSpaceNotAdjacentError String
                 deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
@@ -100,3 +103,15 @@ workerCanBePlaced :: Worker -> Board -> Either BoardError Board
 workerCanBePlaced worker board = case board.workers ! worker of
                                    Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
                                    NotOnBoard -> Right board
+
+spaceIsAdjacent :: Worker -> Position -> Board -> Either BoardError Board
+spaceIsAdjacent worker (Position (xTarget, yTarget)) board =
+  let xTargetInt = fromEnum xTarget
+      yTargetInt = fromEnum yTarget
+      xTargetBounds = [xTargetInt - 1, xTargetInt, xTargetInt + 1]
+      yTargetBounds = [yTargetInt - 1, yTargetInt, yTargetInt + 1]
+   in case board.workers ! worker of
+        Position (x, y) -> if (fromEnum x) `elem` xTargetBounds && (fromEnum y) `elem` yTargetBounds
+                              then Right board
+                              else Left $ TargetSpaceNotAdjacentError "Target space needs to be adjacent to worker"
+        NotOnBoard      -> Left $ WorkerNotYetPlacedError "Worker needs to be placed to check for adjacency"
