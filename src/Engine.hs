@@ -56,9 +56,10 @@ emptyBoard = Board grid workers
 spaceOnBoard :: Position -> Board -> Space
 spaceOnBoard position board = board.grid ! position
 
-buildUp :: Position -> Board -> Either BoardError Board
-buildUp targetPosition board =
+buildUp :: Worker -> Position -> Board -> Either BoardError Board
+buildUp buildWorker targetPosition board =
   spaceHasNoWorker targetSpace board
+  >> spaceIsAdjacent buildWorker targetPosition board
   >> spaceCanBuildUp targetSpace board
   >> Right (board { grid = updatedGrid })
   where targetSpace = spaceOnBoard targetPosition board
@@ -76,6 +77,7 @@ placeWorker workerToPlace targetPosition board =
 moveWorker :: Worker -> Position -> Board -> Either BoardError Board
 moveWorker workerToMove targetPosition board =
   spaceHasNoWorker targetSpace board
+  >> spaceIsAdjacent workerToMove targetPosition board
   >> spaceCanBeMovedInto targetSpace board
   >> Right (board { grid = updatedGrid, workers = updatedWorkers })
   where targetSpace = spaceOnBoard targetPosition board
@@ -97,7 +99,9 @@ spaceCanBuildUp space board = case space.level of
                                 _         -> Right board
 
 spaceCanBeMovedInto :: Space -> Board -> Either BoardError Board
-spaceCanBeMovedInto = spaceCanBuildUp
+spaceCanBeMovedInto space board =
+  spaceCanBuildUp space board
+  >> spaceHasNoWorker space board
 
 workerCanBePlaced :: Worker -> Board -> Either BoardError Board
 workerCanBePlaced worker board = case board.workers ! worker of
@@ -111,7 +115,7 @@ spaceIsAdjacent worker (Position (xTarget, yTarget)) board =
       xTargetBounds = [xTargetInt - 1, xTargetInt, xTargetInt + 1]
       yTargetBounds = [yTargetInt - 1, yTargetInt, yTargetInt + 1]
    in case board.workers ! worker of
-        Position (x, y) -> if (fromEnum x) `elem` xTargetBounds && (fromEnum y) `elem` yTargetBounds
+        Position (x, y) -> if (fromEnum x) `elem` xTargetBounds && (fromEnum y) `elem` yTargetBounds && (x, y) /= (xTarget, yTarget)
                               then Right board
                               else Left $ TargetSpaceNotAdjacentError "Target space needs to be adjacent to worker"
         NotOnBoard      -> Left $ WorkerNotYetPlacedError "Worker needs to be placed to check for adjacency"

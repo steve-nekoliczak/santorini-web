@@ -29,15 +29,20 @@ spec = do
 
   describe "buildUp" $ do
     it "builds on a non-dome space" $ do
-      let modifiedBoard = buildUp (Position (XA, Y1)) emptyBoardFactory
+      let position = (Position (XC, Y4))
+      let targetPosition = (Position (XC, Y5))
+      let placedWorkerBoard = placeWorker BlueMan position emptyBoardFactory
+      let modifiedBoard = buildUp BlueMan targetPosition (fromRight emptyBoardFactory placedWorkerBoard)
 
-      isRight modifiedBoard `shouldBe` True
-      spaceOnBoard (Position (XA, Y1)) (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space LevelOne NoWorker
+      isRight placedWorkerBoard `shouldBe` True
+      spaceOnBoard targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space LevelOne NoWorker
 
     it "returns an error when building on a dome" $ do
       let position = Position (XD, Y5)
-      let modifiedBoard = modifyEmptyBoard [(position, Space Dome NoWorker)]
-      let errorBoard = buildUp position modifiedBoard
+      let targetPosition = Position (XE, Y5)
+      let modifiedBoard = modifyEmptyBoard [(targetPosition, Space Dome NoWorker)]
+      let placedWorkerBoard = placeWorker BlueMan position modifiedBoard
+      let errorBoard = buildUp BlueMan targetPosition (fromRight emptyBoardFactory placedWorkerBoard)
 
       isLeft errorBoard `shouldBe` True
       errorBoard `shouldBe` (Left $ BuildError "Can't build on top of a dome")
