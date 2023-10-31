@@ -89,14 +89,16 @@ moveWorker workerToMove targetPosition board =
         updatedWorkers = insert workerToMove targetPosition board.workers
 
 spaceHasNoWorker :: Space -> Board -> Either BoardError Board
-spaceHasNoWorker space board = case space.worker of
-                                 JustWorker _   -> Left $ OccupiedError "Worker exists in this space"
-                                 NoWorker       -> Right board
+spaceHasNoWorker space board =
+  case space.worker of
+    JustWorker _   -> Left $ OccupiedError "Worker exists in this space"
+    NoWorker       -> Right board
 
 spaceCanBuildUp :: Space -> Board -> Either BoardError Board
-spaceCanBuildUp space board = case space.level of
-                                Dome      -> Left $ BuildError "Can't build on top of a dome"
-                                _         -> Right board
+spaceCanBuildUp space board =
+  case space.level of
+    Dome      -> Left $ BuildError "Can't build on top of a dome"
+    _         -> Right board
 
 spaceCanBeMovedInto :: Space -> Board -> Either BoardError Board
 spaceCanBeMovedInto space board =
@@ -104,9 +106,10 @@ spaceCanBeMovedInto space board =
   >> spaceHasNoWorker space board
 
 workerCanBePlaced :: Worker -> Board -> Either BoardError Board
-workerCanBePlaced worker board = case board.workers ! worker of
-                                   Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
-                                   NotOnBoard -> Right board
+workerCanBePlaced worker board =
+  case board.workers ! worker of
+    Position _ -> Left $ AlreadyPlacedWorkerError "Can't placed worker that's already on the board"
+    NotOnBoard -> Right board
 
 spaceIsAdjacent :: Worker -> Position -> Board -> Either BoardError Board
 spaceIsAdjacent worker (Position (xTarget, yTarget)) board =
