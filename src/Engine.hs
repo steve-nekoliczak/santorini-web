@@ -32,7 +32,27 @@ data BoardError = BuildError String
                 deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
+instance Read XCoord where
+  readsPrec _ = convertXCoord
+convertXCoord :: String -> [(XCoord, String)]
+convertXCoord "A" = [(XA, "")]
+convertXCoord "B" = [(XB, "")]
+convertXCoord "C" = [(XC, "")]
+convertXCoord "D" = [(XD, "")]
+convertXCoord "E" = [(XE, "")]
+convertXCoord _ = error "Invalid X coordinate"
+
 data YCoord = Y1 | Y2 | Y3 | Y4 | Y5 deriving (Show, Eq, Ord, Enum)
+instance Read YCoord where
+  readsPrec _ = convertYCoord
+convertYCoord :: String -> [(YCoord, String)]
+convertYCoord "1" = [(Y1, "")]
+convertYCoord "2" = [(Y2, "")]
+convertYCoord "3" = [(Y3, "")]
+convertYCoord "4" = [(Y4, "")]
+convertYCoord "5" = [(Y5, "")]
+convertYCoord _ = error "Invalid Y coordinate"
+
 data Position = NotOnBoard | Position (XCoord, YCoord) deriving (Show, Eq, Ord)
 
 data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq, Ord, Enum, Bounded)
