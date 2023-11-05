@@ -17,13 +17,15 @@ data GameState = PlaceWorkers
 
 gameplayLoopT :: Board -> StateT GameState IO (Either BoardError Board)
 gameplayLoopT board = do
+  liftIO $ putStrLn $ show board
+
   currState <- get
 
-  boardState <-
+  newBoardT <-
         case currState of
           PlaceWorkers    -> placeWorkerT board
 
-  case boardState of
+  case newBoardT of
     Left errorMessage -> liftIO $ print errorMessage
     Right newBoard    ->
       case currState of
@@ -32,7 +34,15 @@ gameplayLoopT board = do
             NoWorker      -> put BluePlayerTurn
             JustWorker _  -> put PlaceWorkers
 
-  return boardState
+  newState <- get
+
+  case newBoardT of
+    Left _              -> gameplayLoopT board
+    Right newBoard      ->
+      case newState of
+        GameOver        -> return newBoardT
+        BluePlayerTurn  -> return newBoardT -- TODO: Change this once turns are implemented.
+        _               -> gameplayLoopT newBoard
 
 main :: IO ()
 main = do
