@@ -15,17 +15,19 @@ data GameState = PlaceWorkers
                | GameOver
                deriving (Show, Eq)
 
-gameplayLoopT :: Board -> StateT GameState IO (Either BoardError Board)
+type GameStateT = StateT GameState IO (Either BoardError Board)
+
+gameplayLoopT :: Board -> GameStateT
 gameplayLoopT board = do
   liftIO $ putStrLn $ show board
 
   currState <- get
 
-  newBoardT <-
+  possibleNewBoard <-
         case currState of
           PlaceWorkers    -> placeWorkerT board
 
-  case newBoardT of
+  case possibleNewBoard of
     Left errorMessage -> liftIO $ print errorMessage
     Right newBoard    ->
       case currState of
@@ -36,12 +38,12 @@ gameplayLoopT board = do
 
   newState <- get
 
-  case newBoardT of
+  case possibleNewBoard of
     Left _              -> gameplayLoopT board
     Right newBoard      ->
       case newState of
-        GameOver        -> return newBoardT
-        BluePlayerTurn  -> return newBoardT -- TODO: Change this once turns are implemented.
+        GameOver        -> return possibleNewBoard
+        BluePlayerTurn  -> return possibleNewBoard -- TODO: Change this once turns are implemented.
         _               -> gameplayLoopT newBoard
 
 main :: IO ()
@@ -53,7 +55,7 @@ main = do
   putStrLn $ show $ fst newGame
   return ()
 
-placeWorkerT :: Board -> StateT GameState IO (Either BoardError Board)
+placeWorkerT :: Board -> GameStateT
 placeWorkerT board = do
   input <- case nextWorkerToPlace board of
     JustWorker worker -> do
