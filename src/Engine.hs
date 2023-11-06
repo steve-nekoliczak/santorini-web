@@ -8,7 +8,6 @@ module Engine
   , Level (..)
   , Space (..)
   , Worker (..)
-  , MaybeWorker (..)
   , Board (..)
   , BoardError (..)
   , emptyBoard
@@ -66,10 +65,9 @@ convertPosition _ = error "Invalid Position"
 data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq, Ord, Enum, Bounded)
 
 data Worker = BlueMan | BlueWoman | IvoryMan | IvoryWoman deriving (Show, Eq, Ord)
-data MaybeWorker = NoWorker | JustWorker Worker deriving (Show, Eq, Ord)
 
 data Space = Space { level :: Level
-                   , worker :: MaybeWorker
+                   , worker :: Maybe Worker
                    } deriving (Show, Eq)
 
 data Board = Board { grid :: (Map Position Space)
@@ -78,7 +76,7 @@ data Board = Board { grid :: (Map Position Space)
 
 emptyBoard :: Board 
 emptyBoard = Board grid workers
-  where grid = fromList [(Position (x, y), Space Ground NoWorker) | x <- [XA .. XE], y <- [Y1 .. Y5]]
+  where grid = fromList [(Position (x, y), Space Ground Nothing) | x <- [XA .. XE], y <- [Y1 .. Y5]]
         workers = fromList [(BlueMan, NotOnBoard), (BlueWoman, NotOnBoard), (IvoryMan, NotOnBoard), (IvoryWoman, NotOnBoard)]
 
 workersInPlacementOrder :: [Worker]
@@ -96,11 +94,11 @@ buildUp buildWorker targetPosition board =
   where targetSpace = spaceOnBoard targetPosition board
         updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
 
-nextWorkerToPlace :: Board -> MaybeWorker
+nextWorkerToPlace :: Board -> Maybe Worker
 nextWorkerToPlace board =
   if null listOfUnplacedWorkers
-     then NoWorker
-     else JustWorker $ head listOfUnplacedWorkers
+     then Nothing
+     else Just $ head listOfUnplacedWorkers
   where workerIsPlaced worker = board.workers ! worker /= NotOnBoard
         listOfUnplacedWorkers = dropWhile workerIsPlaced workersInPlacementOrder
 
@@ -110,14 +108,14 @@ placeWorker workerToPlace targetPosition board =
   >> spaceHasNoWorker targetSpace board
   >> Right (board { grid = updatedGrid, workers = updatedWorkers })
   where targetSpace = spaceOnBoard targetPosition board
-        updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
+        updatedGrid = insert targetPosition (targetSpace { worker = Just workerToPlace }) board.grid
         updatedWorkers = insert workerToPlace targetPosition board.workers
 
 placeNextWorker :: Position -> Board -> Either BoardError Board
 placeNextWorker targetPosition board =
   case nextWorkerToPlace board of
-    JustWorker worker   -> placeWorker worker targetPosition board
-    NoWorker            -> Left $ AllWorkersPlacedError "No workers left to place"
+    Just worker -> placeWorker worker targetPosition board
+    Nothing     -> Left $ AllWorkersPlacedError "No workers left to place"
 
 moveWorker :: Worker -> Position -> Board -> Either BoardError Board
 moveWorker workerToMove targetPosition board =
@@ -128,16 +126,16 @@ moveWorker workerToMove targetPosition board =
   where targetSpace = spaceOnBoard targetPosition board
         originPosition = board.workers ! workerToMove
         originSpace = spaceOnBoard originPosition board
-        updatedOriginSpace = (originPosition, originSpace { worker = NoWorker })
-        updatedTargetSpace = (targetPosition, targetSpace { worker = JustWorker workerToMove })
+        updatedOriginSpace = (originPosition, originSpace { worker = Nothing })
+        updatedTargetSpace = (targetPosition, targetSpace { worker = Just workerToMove })
         updatedGrid = insertMany [updatedOriginSpace, updatedTargetSpace] board.grid
         updatedWorkers = insert workerToMove targetPosition board.workers
 
 spaceHasNoWorker :: Space -> Board -> Either BoardError Board
 spaceHasNoWorker space board =
   case space.worker of
-    JustWorker _   -> Left $ OccupiedError "Worker exists in this space"
-    NoWorker       -> Right board
+    Just _    -> Left $ OccupiedError "Worker exists in this space"
+    Nothing   -> Right board
 
 spaceCanBuildUp :: Space -> Board -> Either BoardError Board
 spaceCanBuildUp space board =

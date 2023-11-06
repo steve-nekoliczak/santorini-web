@@ -31,10 +31,10 @@ gameplayLoopT board = do
     Left errorMessage -> liftIO $ print errorMessage
     Right newBoard    ->
       case currState of
-        PlaceWorkers    ->
+        PlaceWorkers  ->
           case nextWorkerToPlace newBoard of
-            NoWorker      -> put BluePlayerTurn
-            JustWorker _  -> put PlaceWorkers
+            Nothing   -> put BluePlayerTurn
+            Just _    -> put PlaceWorkers
 
   newState <- get
 
@@ -58,10 +58,10 @@ main = do
 placeNextWorkerT :: Board -> GameStateT
 placeNextWorkerT board = do
   input <- case nextWorkerToPlace board of
-    JustWorker worker -> do
+    Just worker -> do
       liftIO $ print $ "Please place " ++ (show worker) ++ " character"
       liftIO $ getLine
-    -- NoWorker -> do
+    -- Nothing -> do
     --   TODO: Add exception here
 
   let targetPosition = read input :: Position

@@ -14,18 +14,18 @@ spec = do
 
   describe "spaceOnBoard" $ do
     let gridChanges =
-          [ (Position (XA, Y1), Space LevelOne (JustWorker IvoryMan))
-          , (Position (XC, Y2), Space LevelThree (JustWorker BlueWoman))
-          , (Position (XC, Y4), Space LevelTwo NoWorker)
-          , (Position (XD, Y5), Space Dome NoWorker)
+          [ (Position (XA, Y1), Space LevelOne (Just IvoryMan))
+          , (Position (XC, Y2), Space LevelThree (Just BlueWoman))
+          , (Position (XC, Y4), Space LevelTwo Nothing)
+          , (Position (XD, Y5), Space Dome Nothing)
           ]
     let modifiedBoard = modifyEmptyBoard gridChanges
 
     it "returns the space at the specified position" $ do
-      spaceOnBoard (Position (XA, Y1)) modifiedBoard `shouldBe` Space LevelOne (JustWorker IvoryMan)
-      spaceOnBoard (Position (XC, Y2)) modifiedBoard `shouldBe` Space LevelThree (JustWorker BlueWoman)
-      spaceOnBoard (Position (XC, Y4)) modifiedBoard `shouldBe` Space LevelTwo NoWorker
-      spaceOnBoard (Position (XD, Y5)) modifiedBoard `shouldBe` Space Dome NoWorker
+      spaceOnBoard (Position (XA, Y1)) modifiedBoard `shouldBe` Space LevelOne (Just IvoryMan)
+      spaceOnBoard (Position (XC, Y2)) modifiedBoard `shouldBe` Space LevelThree (Just BlueWoman)
+      spaceOnBoard (Position (XC, Y4)) modifiedBoard `shouldBe` Space LevelTwo Nothing 
+      spaceOnBoard (Position (XD, Y5)) modifiedBoard `shouldBe` Space Dome Nothing 
 
   describe "buildUp" $ do
     it "builds on a non-dome space" $ do
@@ -35,12 +35,12 @@ spec = do
       let modifiedBoard = buildUp BlueMan targetPosition (fromRight emptyBoardFactory placedWorkerBoard)
 
       isRight placedWorkerBoard `shouldBe` True
-      spaceOnBoard targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space LevelOne NoWorker
+      spaceOnBoard targetPosition (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space LevelOne Nothing
 
     it "returns an error when building on a dome" $ do
       let position = Position (XD, Y5)
       let targetPosition = Position (XE, Y5)
-      let modifiedBoard = modifyEmptyBoard [(targetPosition, Space Dome NoWorker)]
+      let modifiedBoard = modifyEmptyBoard [(targetPosition, Space Dome Nothing)]
       let placedWorkerBoard = placeWorker BlueMan position modifiedBoard
       let errorBoard = buildUp BlueMan targetPosition (fromRight emptyBoardFactory placedWorkerBoard)
 
@@ -52,7 +52,7 @@ spec = do
       let position = (Position (XC, Y4))
       let modifiedBoard = placeWorker BlueMan position emptyBoardFactory
 
-      spaceOnBoard position (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space Ground (JustWorker BlueMan)
+      spaceOnBoard position (fromRight emptyBoardFactory modifiedBoard) `shouldBe` Space Ground (Just BlueMan)
       (fromRight emptyBoardFactory modifiedBoard).workers ! BlueMan `shouldBe` position
 
   describe "moveWorker" $ do
@@ -62,8 +62,8 @@ spec = do
       let modifiedBoard = placeWorker BlueMan originPosition emptyBoardFactory
       let boardAfterMove = moveWorker BlueMan targetPosition (fromRight emptyBoardFactory modifiedBoard)
 
-      spaceOnBoard originPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground NoWorker
-      spaceOnBoard targetPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground (JustWorker BlueMan)
+      spaceOnBoard originPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground Nothing
+      spaceOnBoard targetPosition (fromRight emptyBoardFactory boardAfterMove) `shouldBe` Space Ground (Just BlueMan)
       (fromRight emptyBoardFactory boardAfterMove).workers ! BlueMan `shouldBe` targetPosition
 
   describe "spaceIsAdjacent" $ do
