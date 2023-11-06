@@ -51,7 +51,7 @@ placeNextWorkerT :: Board -> GameStateT
 placeNextWorkerT board = do
   input <- case nextWorkerToPlace board of
     Just worker -> do
-      liftIO $ print $ "Please place " ++ (show worker) ++ " character"
+      liftIO $ print $ "Please place " ++ show worker ++ " character"
       liftIO $ getLine
     -- Nothing -> do
     --   TODO: Add exception here
