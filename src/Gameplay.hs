@@ -49,14 +49,12 @@ gameplayLoopT board = do
 
 placeNextWorkerT :: Board -> GameStateT
 placeNextWorkerT board = do
-  input <- case nextWorkerToPlace board of
+  targetPosition <- case nextWorkerToPlace board of
     Just worker -> do
-      liftIO $ print $ "Please place " ++ show worker ++ " character"
-      liftIO $ getLine
+      readPosition $ "Please place " ++ show worker ++ " character"
     -- Nothing -> do
     --   TODO: Add exception here
 
-  let targetPosition = read input :: Position
   let boardAfterAction = placeNextWorker targetPosition board
 
   case boardAfterAction of
@@ -76,9 +74,7 @@ moveWorkerT player board = do
   workerInput <- liftIO $ getLine
   let worker = read workerInput :: Worker
 
-  liftIO $ print $ "Select target position for " ++ show worker
-  targetPositionInput <- liftIO $ getLine
-  let targetPosition = read targetPositionInput :: Position
+  targetPosition <- readPosition $ "Select target position for " ++ show worker
 
   let boardAfterAction = moveWorker worker targetPosition board
 
@@ -90,9 +86,7 @@ moveWorkerT player board = do
 
 buildUpT :: Player -> Worker -> Board -> GameStateT
 buildUpT player worker board = do
-  liftIO $ print $ "Select target position to build for " ++ show worker
-  targetPositionInput <- liftIO $ getLine
-  let targetPosition = read targetPositionInput :: Position
+  targetPosition <- readPosition $ "Select target position to build for " ++ show worker
 
   let boardAfterAction = buildUp worker targetPosition board
 
@@ -101,3 +95,11 @@ buildUpT player worker board = do
     Right _           -> put $ MoveWorker $ nextPlayer player
 
   return boardAfterAction
+
+readPosition :: String -> StateT GameState IO Position
+readPosition message = do
+  liftIO $ print message
+  positionInput <- liftIO $ getLine
+  let position = read positionInput :: Position
+
+  return position
