@@ -16,6 +16,15 @@ data GameState =
 
 type GameStateT = StateT GameState IO (Either BoardError Board)
 
+main :: IO ()
+main = do
+  putStrLn "Starting new game of Santorini!"
+  let startGame = gameplayLoopT emptyBoard
+  let initialState = PlaceWorkers
+  newGame <- runStateT startGame initialState
+  putStrLn $ show $ fst newGame
+  return ()
+
 gameplayLoopT :: Board -> GameStateT
 gameplayLoopT board = do
   liftIO $ putStrLn $ show board
@@ -37,15 +46,6 @@ gameplayLoopT board = do
       case stateAfterAction of
         GameOver        -> return boardAfterAction
         _               -> gameplayLoopT newBoard
-
-main :: IO ()
-main = do
-  putStrLn "Starting new game of Santorini!"
-  let startGame = gameplayLoopT emptyBoard
-  let initialState = PlaceWorkers
-  newGame <- runStateT startGame initialState
-  putStrLn $ show $ fst newGame
-  return ()
 
 placeNextWorkerT :: Board -> GameStateT
 placeNextWorkerT board = do
