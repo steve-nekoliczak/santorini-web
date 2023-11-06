@@ -7,13 +7,12 @@ import Control.Monad.Trans.State
 import Engine
 import Data.Either
 
-data Player = BluePlayer | IvoryPlayer deriving (Show, Eq)
-
-data GameState = PlaceWorkers
-               | BluePlayerTurn
-               | IvoryPlayerTurn
-               | GameOver
-               deriving (Show, Eq)
+data GameState =
+    PlaceWorkers
+  | MoveWorker  { player :: Player }
+  | BuildUp     { player :: Player, worker :: Worker }
+  | GameOver
+  deriving (Show, Eq)
 
 type GameStateT = StateT GameState IO (Either BoardError Board)
 
@@ -21,29 +20,22 @@ gameplayLoopT :: Board -> GameStateT
 gameplayLoopT board = do
   liftIO $ putStrLn $ show board
 
-  currState <- get
+  state <- get
 
-  possibleNewBoard <-
-        case currState of
-          PlaceWorkers    -> placeNextWorkerT board
+  boardAfterAction <-
+        case state of
+          PlaceWorkers          -> placeNextWorkerT board
+          MoveWorker player     -> moveWorkerT player board
+          BuildUp player worker -> buildUpT player worker board
+          GameOver              -> return $ Right board
 
-  case possibleNewBoard of
-    Left errorMessage -> liftIO $ print errorMessage
-    Right newBoard    ->
-      case currState of
-        PlaceWorkers  ->
-          case nextWorkerToPlace newBoard of
-            Nothing   -> put BluePlayerTurn
-            Just _    -> put PlaceWorkers
+  stateAfterAction <- get
 
-  newState <- get
-
-  case possibleNewBoard of
+  case boardAfterAction of
     Left _              -> gameplayLoopT board
     Right newBoard      ->
-      case newState of
-        GameOver        -> return possibleNewBoard
-        BluePlayerTurn  -> return possibleNewBoard -- TODO: Change this once turns are implemented.
+      case stateAfterAction of
+        GameOver        -> return boardAfterAction
         _               -> gameplayLoopT newBoard
 
 main :: IO ()
@@ -65,6 +57,47 @@ placeNextWorkerT board = do
     --   TODO: Add exception here
 
   let targetPosition = read input :: Position
-  let newBoard = placeNextWorker targetPosition board
+  let boardAfterAction = placeNextWorker targetPosition board
 
-  return newBoard
+  case boardAfterAction of
+    Left errorMessage -> liftIO $ print errorMessage
+    Right newBoard    ->
+      case nextWorkerToPlace newBoard of
+        Nothing       -> put $ MoveWorker BluePlayer
+        Just _        -> put PlaceWorkers
+
+  return boardAfterAction
+
+moveWorkerT :: Player -> Board -> GameStateT
+moveWorkerT player board = do
+  let workers = workersForPlayer player
+
+  liftIO $ print $ "Select a character for " ++ show player ++ ": " ++ show workers
+  workerInput <- liftIO $ getLine
+  let worker = read workerInput :: Worker
+
+  liftIO $ print $ "Select target position for " ++ show worker
+  targetPositionInput <- liftIO $ getLine
+  let targetPosition = read targetPositionInput :: Position
+
+  let boardAfterAction = moveWorker worker targetPosition board
+
+  case boardAfterAction of
+    Left errorMessage -> liftIO $ print errorMessage
+    Right _           -> put $ BuildUp player worker
+
+  return boardAfterAction
+
+buildUpT :: Player -> Worker -> Board -> GameStateT
+buildUpT player worker board = do
+  liftIO $ print $ "Select target position to build for " ++ show worker
+  targetPositionInput <- liftIO $ getLine
+  let targetPosition = read targetPositionInput :: Position
+
+  let boardAfterAction = buildUp worker targetPosition board
+
+  case boardAfterAction of
+    Left errorMessage -> liftIO $ print errorMessage
+    Right _           -> put $ MoveWorker $ nextPlayer player
+
+  return boardAfterAction
