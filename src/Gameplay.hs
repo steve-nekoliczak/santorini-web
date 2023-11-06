@@ -25,7 +25,7 @@ gameplayLoopT board = do
 
   possibleNewBoard <-
         case currState of
-          PlaceWorkers    -> placeWorkerT board
+          PlaceWorkers    -> placeNextWorkerT board
 
   case possibleNewBoard of
     Left errorMessage -> liftIO $ print errorMessage
@@ -55,8 +55,8 @@ main = do
   putStrLn $ show $ fst newGame
   return ()
 
-placeWorkerT :: Board -> GameStateT
-placeWorkerT board = do
+placeNextWorkerT :: Board -> GameStateT
+placeNextWorkerT board = do
   input <- case nextWorkerToPlace board of
     JustWorker worker -> do
       liftIO $ print $ "Please place " ++ (show worker) ++ " character"
