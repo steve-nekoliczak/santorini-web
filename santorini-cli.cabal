@@ -25,6 +25,7 @@ source-repository head
 library
   exposed-modules:
       Engine
+      Gameplay
       Lib
   other-modules:
       Paths_santorini_cli
@@ -37,6 +38,7 @@ library
       base >=4.7 && <5
     , containers
     , hspec
+    , transformers
   default-language: Haskell2010
 
 executable santorini-cli-exe
@@ -53,6 +55,7 @@ executable santorini-cli-exe
     , containers
     , hspec
     , santorini-cli
+    , transformers
   default-language: Haskell2010
 
 test-suite santorini-cli-test
@@ -73,4 +76,5 @@ test-suite santorini-cli-test
     , containers
     , hspec
     , santorini-cli
+    , transformers
   default-language: Haskell2010

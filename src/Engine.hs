@@ -14,13 +14,15 @@ module Engine
   , emptyBoard
   , spaceOnBoard
   , buildUp
+  , nextWorkerToPlace
   , placeWorker
+  , placeNextWorker
   , moveWorker
   , spaceIsAdjacent
   ) where
 
 import Prelude hiding (lookup)
-import Data.Map hiding (map)
+import Data.Map hiding (map, null)
 import Lib
 
 data BoardError = BuildError String
@@ -29,19 +31,45 @@ data BoardError = BuildError String
                 | AlreadyPlacedWorkerError String
                 | WorkerNotYetPlacedError String
                 | TargetSpaceNotAdjacentError String
+                | AllWorkersPlacedError String
                 deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
+instance Read XCoord where
+  readsPrec _ = convertXCoord
+convertXCoord :: String -> [(XCoord, String)]
+convertXCoord "A" = [(XA, "")]
+convertXCoord "B" = [(XB, "")]
+convertXCoord "C" = [(XC, "")]
+convertXCoord "D" = [(XD, "")]
+convertXCoord "E" = [(XE, "")]
+convertXCoord _ = error "Invalid X coordinate"
+
 data YCoord = Y1 | Y2 | Y3 | Y4 | Y5 deriving (Show, Eq, Ord, Enum)
+instance Read YCoord where
+  readsPrec _ = convertYCoord
+convertYCoord :: String -> [(YCoord, String)]
+convertYCoord "1" = [(Y1, "")]
+convertYCoord "2" = [(Y2, "")]
+convertYCoord "3" = [(Y3, "")]
+convertYCoord "4" = [(Y4, "")]
+convertYCoord "5" = [(Y5, "")]
+convertYCoord _ = error "Invalid Y coordinate"
+
 data Position = NotOnBoard | Position (XCoord, YCoord) deriving (Show, Eq, Ord)
+instance Read Position where
+  readsPrec _ = convertPosition
+convertPosition :: String -> [(Position, String)]
+convertPosition (x:y:[]) = [(Position (read [x], read [y]), "")]
+convertPosition _ = error "Invalid Position"
 
 data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq, Ord, Enum, Bounded)
 
 data Worker = BlueMan | BlueWoman | IvoryMan | IvoryWoman deriving (Show, Eq, Ord)
-data MaybeWorker w = NoWorker | JustWorker w deriving (Show, Eq, Ord)
+data MaybeWorker = NoWorker | JustWorker Worker deriving (Show, Eq, Ord)
 
 data Space = Space { level :: Level
-                   , worker :: MaybeWorker Worker
+                   , worker :: MaybeWorker
                    } deriving (Show, Eq)
 
 data Board = Board { grid :: (Map Position Space)
@@ -52,6 +80,9 @@ emptyBoard :: Board
 emptyBoard = Board grid workers
   where grid = fromList [(Position (x, y), Space Ground NoWorker) | x <- [XA .. XE], y <- [Y1 .. Y5]]
         workers = fromList [(BlueMan, NotOnBoard), (BlueWoman, NotOnBoard), (IvoryMan, NotOnBoard), (IvoryWoman, NotOnBoard)]
+
+workersInPlacementOrder :: [Worker]
+workersInPlacementOrder = [BlueMan, IvoryMan, BlueWoman, IvoryWoman]
 
 spaceOnBoard :: Position -> Board -> Space
 spaceOnBoard position board = board.grid ! position
@@ -65,6 +96,14 @@ buildUp buildWorker targetPosition board =
   where targetSpace = spaceOnBoard targetPosition board
         updatedGrid = insert targetPosition (targetSpace { level = succ targetSpace.level }) board.grid
 
+nextWorkerToPlace :: Board -> MaybeWorker
+nextWorkerToPlace board =
+  if null listOfUnplacedWorkers
+     then NoWorker
+     else JustWorker $ head listOfUnplacedWorkers
+  where workerIsPlaced worker = board.workers ! worker /= NotOnBoard
+        listOfUnplacedWorkers = dropWhile workerIsPlaced workersInPlacementOrder
+
 placeWorker :: Worker -> Position -> Board -> Either BoardError Board
 placeWorker workerToPlace targetPosition board =
   workerCanBePlaced workerToPlace board
@@ -73,6 +112,12 @@ placeWorker workerToPlace targetPosition board =
   where targetSpace = spaceOnBoard targetPosition board
         updatedGrid = insert targetPosition (targetSpace { worker = JustWorker workerToPlace }) board.grid
         updatedWorkers = insert workerToPlace targetPosition board.workers
+
+placeNextWorker :: Position -> Board -> Either BoardError Board
+placeNextWorker targetPosition board =
+  case nextWorkerToPlace board of
+    JustWorker worker   -> placeWorker worker targetPosition board
+    NoWorker            -> Left $ AllWorkersPlacedError "No workers left to place"
 
 moveWorker :: Worker -> Position -> Board -> Either BoardError Board
 moveWorker workerToMove targetPosition board =
