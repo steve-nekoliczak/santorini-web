@@ -7,44 +7,14 @@ import Control.Monad.Trans.State
 import Engine
 import Data.Either
 
-data Player = BluePlayer | IvoryPlayer deriving (Show, Eq)
-
-data GameState = PlaceWorkers
-               | BluePlayerTurn
-               | IvoryPlayerTurn
-               | GameOver
-               deriving (Show, Eq)
+data GameState =
+    PlaceWorkers
+  | MoveWorker  { player :: Player }
+  | BuildUp     { player :: Player, worker :: Worker }
+  | GameOver
+  deriving (Show, Eq)
 
 type GameStateT = StateT GameState IO (Either BoardError Board)
-
-gameplayLoopT :: Board -> GameStateT
-gameplayLoopT board = do
-  liftIO $ putStrLn $ show board
-
-  currState <- get
-
-  possibleNewBoard <-
-        case currState of
-          PlaceWorkers    -> placeNextWorkerT board
-
-  case possibleNewBoard of
-    Left errorMessage -> liftIO $ print errorMessage
-    Right newBoard    ->
-      case currState of
-        PlaceWorkers  ->
-          case nextWorkerToPlace newBoard of
-            Nothing   -> put BluePlayerTurn
-            Just _    -> put PlaceWorkers
-
-  newState <- get
-
-  case possibleNewBoard of
-    Left _              -> gameplayLoopT board
-    Right newBoard      ->
-      case newState of
-        GameOver        -> return possibleNewBoard
-        BluePlayerTurn  -> return possibleNewBoard -- TODO: Change this once turns are implemented.
-        _               -> gameplayLoopT newBoard
 
 main :: IO ()
 main = do
@@ -55,16 +25,88 @@ main = do
   putStrLn $ show $ fst newGame
   return ()
 
+gameplayLoopT :: Board -> GameStateT
+gameplayLoopT board = do
+  liftIO $ putStrLn $ show board
+
+  state' <- get
+
+  boardAfterAction <-
+        case state' of
+          PlaceWorkers          -> placeNextWorkerT board
+          MoveWorker player     -> moveWorkerT player board
+          BuildUp player worker -> buildUpT player worker board
+          GameOver              -> return $ Right board
+
+  stateAfterAction <- get
+
+  case boardAfterAction of
+    Left errorMessage   -> (liftIO $ print errorMessage) >> gameplayLoopT board
+    Right newBoard      ->
+      case stateAfterAction of
+        GameOver        -> return boardAfterAction
+        _               -> gameplayLoopT newBoard
+
 placeNextWorkerT :: Board -> GameStateT
 placeNextWorkerT board = do
-  input <- case nextWorkerToPlace board of
+  targetPosition <- case nextWorkerToPlace board of
     Just worker -> do
-      liftIO $ print $ "Please place " ++ (show worker) ++ " character"
-      liftIO $ getLine
+      readPosition $ "Please place " ++ show worker ++ " character"
     -- Nothing -> do
     --   TODO: Add exception here
 
-  let targetPosition = read input :: Position
-  let newBoard = placeNextWorker targetPosition board
+  let boardAfterAction = placeNextWorker targetPosition board
 
-  return newBoard
+  case boardAfterAction of
+    Left _            -> put PlaceWorkers
+    Right newBoard    ->
+      case nextWorkerToPlace newBoard of
+        Nothing       -> put $ MoveWorker BluePlayer
+        Just _        -> put PlaceWorkers
+
+  return boardAfterAction
+
+moveWorkerT :: Player -> Board -> GameStateT
+moveWorkerT player board = do
+  let workers = workersForPlayer player
+
+  worker <- readWorker $ "Select a character for " ++ show player ++ ": " ++ show workers
+  targetPosition <- readPosition $ "Select target position for " ++ show worker
+
+  let boardAfterAction = moveWorker worker targetPosition board
+
+  case boardAfterAction of
+    Left errorMessage -> put $ MoveWorker player
+    Right _           -> put $ BuildUp player worker
+
+  return boardAfterAction
+
+buildUpT :: Player -> Worker -> Board -> GameStateT
+buildUpT player worker board = do
+  targetPosition <- readPosition $ "Select target position to build for " ++ show worker
+
+  let boardAfterAction = buildUp worker targetPosition board
+
+  case boardAfterAction of
+    Left errorMessage -> put $ BuildUp player worker
+    Right _           -> put $ MoveWorker $ nextPlayer player
+
+  return boardAfterAction
+
+-- TODO: Find out how to pass in types as arguments.
+-- That will consolidate readPosition and readWorker into one function.
+readPosition :: String -> StateT GameState IO Position
+readPosition message = do
+  liftIO $ print message
+  positionInput <- liftIO $ getLine
+  let position = read positionInput :: Position
+
+  return position
+
+readWorker :: String -> StateT GameState IO Worker
+readWorker message = do
+  liftIO $ print message
+  workerInput <- liftIO $ getLine
+  let worker = read workerInput :: Worker
+
+  return worker

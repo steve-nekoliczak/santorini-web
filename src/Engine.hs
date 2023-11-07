@@ -7,10 +7,13 @@ module Engine
   , Position (..)
   , Level (..)
   , Space (..)
+  , Player (..)
   , Worker (..)
   , Board (..)
   , BoardError (..)
   , emptyBoard
+  , workersForPlayer
+  , nextPlayer
   , spaceOnBoard
   , buildUp
   , nextWorkerToPlace
@@ -64,7 +67,8 @@ convertPosition _ = error "Invalid Position"
 
 data Level = Ground | LevelOne | LevelTwo | LevelThree | Dome deriving (Show, Eq, Ord, Enum, Bounded)
 
-data Worker = BlueMan | BlueWoman | IvoryMan | IvoryWoman deriving (Show, Eq, Ord)
+data Player = BluePlayer | IvoryPlayer deriving (Show, Eq)
+data Worker = BlueMan | BlueWoman | IvoryMan | IvoryWoman deriving (Show, Read, Eq, Ord)
 
 data Space = Space { level :: Level
                    , worker :: Maybe Worker
@@ -78,6 +82,14 @@ emptyBoard :: Board
 emptyBoard = Board grid workers
   where grid = fromList [(Position (x, y), Space Ground Nothing) | x <- [XA .. XE], y <- [Y1 .. Y5]]
         workers = fromList [(BlueMan, NotOnBoard), (BlueWoman, NotOnBoard), (IvoryMan, NotOnBoard), (IvoryWoman, NotOnBoard)]
+
+workersForPlayer :: Player -> [Worker]
+workersForPlayer BluePlayer = [BlueMan, BlueWoman]
+workersForPlayer IvoryPlayer = [IvoryMan, IvoryWoman]
+
+nextPlayer :: Player -> Player
+nextPlayer BluePlayer = IvoryPlayer
+nextPlayer IvoryPlayer = BluePlayer
 
 workersInPlacementOrder :: [Worker]
 workersInPlacementOrder = [BlueMan, IvoryMan, BlueWoman, IvoryWoman]
