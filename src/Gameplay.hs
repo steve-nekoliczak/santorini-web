@@ -93,6 +93,8 @@ buildUpT player worker board = do
 
   return boardAfterAction
 
+-- TODO: Find out how to pass in types as arguments.
+-- That will consolidate readPosition and readWorker into one function.
 readPosition :: String -> StateT GameState IO Position
 readPosition message = do
   liftIO $ print message
