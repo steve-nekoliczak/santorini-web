@@ -14,7 +14,8 @@ data GameState =
   | GameOver
   deriving (Show, Eq)
 
-type GameStateT = StateT GameState IO (Either BoardError Board)
+type BaseStateT = StateT GameState IO
+type GameStateT = BaseStateT (Either BoardError Board)
 
 main :: IO ()
 main = do
@@ -93,20 +94,18 @@ buildUpT player worker board = do
 
   return boardAfterAction
 
--- TODO: Find out how to pass in types as arguments.
--- That will consolidate readPosition and readWorker into one function.
-readPosition :: String -> StateT GameState IO Position
+readPosition :: String -> BaseStateT Position
 readPosition message = do
-  liftIO $ print message
-  positionInput <- liftIO $ getLine
-  let position = read positionInput :: Position
+  positionInput <- readInput message
+  return (read positionInput :: Position)
 
-  return position
-
-readWorker :: String -> StateT GameState IO Worker
+readWorker :: String -> BaseStateT Worker
 readWorker message = do
-  liftIO $ print message
-  workerInput <- liftIO $ getLine
-  let worker = read workerInput :: Worker
+  workerInput <- readInput message
+  return (read workerInput :: Worker)
 
-  return worker
+readInput :: String -> BaseStateT String
+readInput message = do
+  liftIO $ print message
+  input <- liftIO $ getLine
+  return input
