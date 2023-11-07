@@ -70,10 +70,7 @@ moveWorkerT :: Player -> Board -> GameStateT
 moveWorkerT player board = do
   let workers = workersForPlayer player
 
-  liftIO $ print $ "Select a character for " ++ show player ++ ": " ++ show workers
-  workerInput <- liftIO $ getLine
-  let worker = read workerInput :: Worker
-
+  worker <- readWorker $ "Select a character for " ++ show player ++ ": " ++ show workers
   targetPosition <- readPosition $ "Select target position for " ++ show worker
 
   let boardAfterAction = moveWorker worker targetPosition board
@@ -103,3 +100,11 @@ readPosition message = do
   let position = read positionInput :: Position
 
   return position
+
+readWorker :: String -> StateT GameState IO Worker
+readWorker message = do
+  liftIO $ print message
+  workerInput <- liftIO $ getLine
+  let worker = read workerInput :: Worker
+
+  return worker
