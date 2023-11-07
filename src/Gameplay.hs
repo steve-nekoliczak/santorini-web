@@ -29,10 +29,10 @@ gameplayLoopT :: Board -> GameStateT
 gameplayLoopT board = do
   liftIO $ putStrLn $ show board
 
-  state <- get
+  state' <- get
 
   boardAfterAction <-
-        case state of
+        case state' of
           PlaceWorkers          -> placeNextWorkerT board
           MoveWorker player     -> moveWorkerT player board
           BuildUp player worker -> buildUpT player worker board
@@ -41,7 +41,7 @@ gameplayLoopT board = do
   stateAfterAction <- get
 
   case boardAfterAction of
-    Left _              -> gameplayLoopT board
+    Left errorMessage   -> (liftIO $ print errorMessage) >> gameplayLoopT board
     Right newBoard      ->
       case stateAfterAction of
         GameOver        -> return boardAfterAction
@@ -58,7 +58,7 @@ placeNextWorkerT board = do
   let boardAfterAction = placeNextWorker targetPosition board
 
   case boardAfterAction of
-    Left errorMessage -> liftIO $ print errorMessage
+    Left _            -> put PlaceWorkers
     Right newBoard    ->
       case nextWorkerToPlace newBoard of
         Nothing       -> put $ MoveWorker BluePlayer
@@ -76,7 +76,7 @@ moveWorkerT player board = do
   let boardAfterAction = moveWorker worker targetPosition board
 
   case boardAfterAction of
-    Left errorMessage -> liftIO $ print errorMessage
+    Left errorMessage -> put $ MoveWorker player
     Right _           -> put $ BuildUp player worker
 
   return boardAfterAction
@@ -88,7 +88,7 @@ buildUpT player worker board = do
   let boardAfterAction = buildUp worker targetPosition board
 
   case boardAfterAction of
-    Left errorMessage -> liftIO $ print errorMessage
+    Left errorMessage -> put $ BuildUp player worker
     Right _           -> put $ MoveWorker $ nextPlayer player
 
   return boardAfterAction
