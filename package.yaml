@@ -23,6 +23,7 @@ dependencies:
 - containers
 - hspec
 - transformers
+- brick
 
 ghc-options:
 - -Wall
