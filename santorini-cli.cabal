@@ -24,6 +24,7 @@ source-repository head
 
 library
   exposed-modules:
+      DisplayEngine
       Engine
       Gameplay
       Lib
@@ -39,7 +40,10 @@ library
     , brick
     , containers
     , hspec
+    , mtl
+    , text
     , transformers
+    , vty
   default-language: Haskell2010
 
 executable santorini-cli-exe
@@ -56,8 +60,11 @@ executable santorini-cli-exe
     , brick
     , containers
     , hspec
+    , mtl
     , santorini-cli
+    , text
     , transformers
+    , vty
   default-language: Haskell2010
 
 test-suite santorini-cli-test
@@ -78,6 +85,9 @@ test-suite santorini-cli-test
     , brick
     , containers
     , hspec
+    , mtl
     , santorini-cli
+    , text
     , transformers
+    , vty
   default-language: Haskell2010

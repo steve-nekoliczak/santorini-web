@@ -24,6 +24,9 @@ dependencies:
 - hspec
 - transformers
 - brick
+- vty
+- mtl
+- text
 
 ghc-options:
 - -Wall
