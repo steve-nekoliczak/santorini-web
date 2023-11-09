@@ -41,6 +41,7 @@ library
     , containers
     , hspec
     , mtl
+    , split
     , text
     , transformers
     , vty
@@ -62,6 +63,7 @@ executable santorini-cli-exe
     , hspec
     , mtl
     , santorini-cli
+    , split
     , text
     , transformers
     , vty
@@ -87,6 +89,7 @@ test-suite santorini-cli-test
     , hspec
     , mtl
     , santorini-cli
+    , split
     , text
     , transformers
     , vty

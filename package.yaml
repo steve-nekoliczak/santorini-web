@@ -27,6 +27,7 @@ dependencies:
 - vty
 - mtl
 - text
+- split
 
 ghc-options:
 - -Wall
