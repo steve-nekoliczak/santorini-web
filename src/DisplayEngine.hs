@@ -2,7 +2,7 @@ module DisplayEngine
   (
   ) where
 
-import Brick (Widget, simpleMain, (<+>), (<=>), str, withBorderStyle, joinBorders)
+import Brick (Widget, simpleMain, (<+>), (<=>), str, withBorderStyle, joinBorders, hLimitPercent)
 import Brick.Widgets.Center (center)
 import Brick.Widgets.Border (borderWithLabel, vBorder)
 import Brick.Widgets.Border.Style (unicode)
@@ -28,5 +28,14 @@ gameLogWidget =
     borderWithLabel (str "Text") $
     center (str "TODO: Game log goes here")
 
+leftSide :: Widget ()
+leftSide = boardWidget
+
+rightSidePercent :: Int
+rightSidePercent = 40
+
+rightSide :: Widget ()
+rightSide = hLimitPercent rightSidePercent $ hudWidget <=> gameLogWidget
+
 main :: IO ()
-main = simpleMain $ boardWidget <+> (hudWidget <=> gameLogWidget)
+main = simpleMain $ leftSide <+> rightSide
