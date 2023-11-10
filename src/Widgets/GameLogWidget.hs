@@ -1,8 +1,8 @@
-module GameLogWidget
+module Widgets.GameLogWidget
   ( gameLogWidget
   ) where
 
-import Brick (Widget, str, withBorderStyle, joinBorders)
+import Brick (Widget, joinBorders, str, withBorderStyle)
 import Brick.Widgets.Border (borderWithLabel)
 import Brick.Widgets.Border.Style (unicode)
 import Brick.Widgets.Center (center)

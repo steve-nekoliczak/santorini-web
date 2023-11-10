@@ -24,13 +24,14 @@ source-repository head
 
 library
   exposed-modules:
-      BoardWidget
       DisplayEngine
       Engine
-      GameLogWidget
       Gameplay
-      HUDWidget
       Lib
+      Widgets.BoardWidget
+      Widgets.GameLogWidget
+      Widgets.GameWidget
+      Widgets.HUDWidget
   other-modules:
       Paths_santorini_cli
   hs-source-dirs:
