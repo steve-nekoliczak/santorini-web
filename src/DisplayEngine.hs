@@ -4,9 +4,9 @@ module DisplayEngine
 
 import Brick (Widget, (<+>), (<=>), hLimitPercent, simpleMain)
 
-import BoardWidget (boardWidget)
-import GameLogWidget (gameLogWidget)
-import HUDWidget (hudWidget)
+import Widgets.BoardWidget (boardWidget)
+import Widgets.GameLogWidget (gameLogWidget)
+import Widgets.HUDWidget (hudWidget)
 
 leftSide :: Widget ()
 leftSide = boardWidget
