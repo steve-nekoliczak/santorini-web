@@ -25,7 +25,7 @@ module Engine
 
 import Prelude hiding (lookup)
 import Data.Map hiding (map, null)
-import Lib
+import Lib (insertMany)
 
 data BoardError = BuildError String
                 | MoveError String
@@ -34,6 +34,7 @@ data BoardError = BuildError String
                 | WorkerNotYetPlacedError String
                 | TargetSpaceNotAdjacentError String
                 | AllWorkersPlacedError String
+                | InvalidPositionError String
                 deriving (Show, Eq)
 
 data XCoord = XA | XB | XC | XD | XE deriving (Show, Eq, Ord, Enum)
@@ -167,6 +168,7 @@ workerCanBePlaced worker board =
     NotOnBoard -> Right board
 
 spaceIsAdjacent :: Worker -> Position -> Board -> Either BoardError Board
+spaceIsAdjacent _ NotOnBoard _ = Left $ InvalidPositionError "Invalid position supplied to spaceIsAdjacent"
 spaceIsAdjacent worker (Position (xTarget, yTarget)) board =
   let xTargetInt = fromEnum xTarget
       yTargetInt = fromEnum yTarget

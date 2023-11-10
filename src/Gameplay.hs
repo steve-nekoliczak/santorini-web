@@ -5,7 +5,6 @@ module Gameplay
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State
 import Engine
-import Data.Either
 
 data GameState =
     PlaceWorkers
@@ -53,8 +52,7 @@ placeNextWorkerT board = do
   targetPosition <- case nextWorkerToPlace board of
     Just worker -> do
       readPosition $ "Please place " ++ show worker ++ " character"
-    -- Nothing -> do
-    --   TODO: Add exception here
+    Nothing     -> undefined -- TODO: Add exception handling here
 
   let boardAfterAction = placeNextWorker targetPosition board
 
@@ -77,7 +75,7 @@ moveWorkerT player board = do
   let boardAfterAction = moveWorker worker targetPosition board
 
   case boardAfterAction of
-    Left errorMessage -> put $ MoveWorker player
+    Left _            -> put $ MoveWorker player
     Right _           -> put $ BuildUp player worker
 
   return boardAfterAction
@@ -89,7 +87,7 @@ buildUpT player worker board = do
   let boardAfterAction = buildUp worker targetPosition board
 
   case boardAfterAction of
-    Left errorMessage -> put $ BuildUp player worker
+    Left _            -> put $ BuildUp player worker
     Right _           -> put $ MoveWorker $ nextPlayer player
 
   return boardAfterAction

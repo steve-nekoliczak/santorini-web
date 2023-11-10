@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Lib
+import Lib (insertMany)
 
 main :: IO ()
 main = undefined
