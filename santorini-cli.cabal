@@ -31,6 +31,7 @@ library
       Widgets.BoardWidget
       Widgets.GameLogWidget
       Widgets.HUDWidget
+      Widgets.MainWidget
   other-modules:
       Paths_santorini_cli
   hs-source-dirs:
