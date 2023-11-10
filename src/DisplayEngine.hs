@@ -4,7 +4,7 @@ module DisplayEngine
 
 import Brick (simpleMain)
 
-import Widgets.MainWidget (mainWidget)
+import Widgets.GameWidget (gameWidget)
 
 main :: IO ()
-main = simpleMain $ mainWidget
+main = simpleMain $ gameWidget

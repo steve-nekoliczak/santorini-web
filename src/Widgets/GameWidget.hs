@@ -1,5 +1,5 @@
-module Widgets.MainWidget
-  ( mainWidget
+module Widgets.GameWidget
+  ( gameWidget
   ) where
 
 import Brick (Widget, (<+>), (<=>), hLimitPercent)
@@ -17,5 +17,5 @@ rightSidePercent = 40
 rightSide :: Widget ()
 rightSide = hLimitPercent rightSidePercent $ hudWidget <=> gameLogWidget
 
-mainWidget :: Widget ()
-mainWidget = leftSide <+> rightSide
+gameWidget :: Widget ()
+gameWidget = leftSide <+> rightSide
