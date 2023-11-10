@@ -3,7 +3,8 @@ module Gameplay
   ) where
 
 import Control.Monad.IO.Class (liftIO)
-import Control.Monad.Trans.State
+import Control.Monad.Trans.State (StateT, get, put, runStateT)
+
 import Engine
 
 data GameState =

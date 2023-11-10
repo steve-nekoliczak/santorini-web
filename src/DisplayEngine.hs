@@ -1,10 +1,9 @@
-{-# LANGUAGE OverloadedRecordDot #-}
-
 module DisplayEngine 
   (
   ) where
 
-import Brick (Widget, simpleMain, (<+>), (<=>), hLimitPercent)
+import Brick (Widget, (<+>), (<=>), hLimitPercent, simpleMain)
+
 import BoardWidget (boardWidget)
 import GameLogWidget (gameLogWidget)
 import HUDWidget (hudWidget)

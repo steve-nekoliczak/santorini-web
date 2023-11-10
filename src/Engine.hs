@@ -23,8 +23,8 @@ module Engine
   , spaceIsAdjacent
   ) where
 
-import Prelude hiding (lookup)
-import Data.Map hiding (map, null)
+import Data.Map (Map, (!), fromList, insert)
+
 import Lib (insertMany)
 
 data BoardError = BuildError String

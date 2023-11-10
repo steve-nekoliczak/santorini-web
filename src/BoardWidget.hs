@@ -2,14 +2,15 @@ module BoardWidget
   ( boardWidget
   ) where
 
-import Brick (Widget, str, txt, withBorderStyle, joinBorders, hLimit, vLimit)
-import Brick.Widgets.Center (center)
+import Brick (Widget, hLimit, joinBorders, str, txt, vLimit, withBorderStyle)
 import Brick.Widgets.Border (borderWithLabel)
 import Brick.Widgets.Border.Style (unicode)
-import Brick.Widgets.Table (table, renderTable)
-import qualified Data.Text as T
-import Engine
+import Brick.Widgets.Center (center)
+import Brick.Widgets.Table (renderTable, table)
 import Data.List.Split (chunksOf)
+import qualified Data.Text as T
+
+import Engine
 
 boardWidget :: Widget ()
 boardWidget =
