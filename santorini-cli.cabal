@@ -24,9 +24,12 @@ source-repository head
 
 library
   exposed-modules:
+      BoardWidget
       DisplayEngine
       Engine
+      GameLogWidget
       Gameplay
+      HUDWidget
       Lib
   other-modules:
       Paths_santorini_cli
@@ -34,7 +37,7 @@ library
       src
   default-extensions:
       NamedFieldPuns OverloadedRecordDot
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  ghc-options: -Wall -Wno-unused-top-binds
   build-depends:
       base >=4.7 && <5
     , brick
@@ -55,7 +58,7 @@ executable santorini-cli-exe
       app
   default-extensions:
       NamedFieldPuns OverloadedRecordDot
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wno-unused-top-binds -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , brick
@@ -81,7 +84,7 @@ test-suite santorini-cli-test
       test/factory
   default-extensions:
       NamedFieldPuns OverloadedRecordDot
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -Wno-unused-top-binds -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , brick
