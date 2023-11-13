@@ -36,38 +36,21 @@ data XPlacementName =
   | XEButton
   deriving (Show, Eq, Ord)
 
-data YPlacementChoice = ChoiceY1 | ChoiceY2 | ChoiceY3 | ChoiceY4 | ChoiceY5
-            deriving Show
-
-data YPlacementName =
-    Y1Button
-  | Y2Button
-  | Y3Button
-  | Y4Button
-  | Y5Button
-  deriving (Show, Eq, Ord)
-
 data DisplayState =
-  PickXCoord { _xCoordDialog :: D.Dialog XPlacementChoice () }
+  PickXCoord { _xCoordDialog :: D.Dialog XPlacementChoice XPlacementName }
   | PickYCoord
+
+data DisplayName =
+  PickXCoordName
 
 -- makeLenses ''DialogState
 
 -- All widgets returned by drawUI need to be of the same type.
 -- AllWidgets is a list of the names of the widgets.
-drawUI :: DisplayState -> [Widget ()]
+drawUI :: DisplayState -> [Widget DisplayName]
 drawUI (PickXCoord xCoordDialog) = [ui]
     where
         ui = D.renderDialog (xCoordDialog) $ C.hCenter $ padAll 1 $ str "This is the dialog body."
-
--- appEvent :: BrickEvent () e -> T.EventM () DialogState ()
--- appEvent (VtyEvent ev) =
---     case ev of
---         V.EvKey V.KEsc [] -> M.halt
---         V.EvKey V.KEnter [] -> T.put initialState
---         -- _ -> D.handleDialogEvent ev
--- appEvent _ = return ()
-
 
 xState :: Maybe (XPlacementName, [(String, XPlacementName, XPlacementChoice)])
 xState = Just (XAButton, xPlacementChoices)
@@ -81,21 +64,9 @@ xPlacementChoices =
   , ("E",   XEButton, ChoiceXE)
   ]
 
--- yState :: Ord name => Maybe (name, [(String, name, choice)])
--- yState = Just (Y1Button, yPlacementChoices)
-
--- yPlacementChoices :: [(String, name, choice)]
--- yPlacementChoices =
---   [ ("1",   Y1Button, ChoiceY1)
---   , ("2",   Y2Button, ChoiceY2)
---   , ("3",   Y3Button, ChoiceY3)
---   , ("4",   Y4Button, ChoiceY4)
---   , ("5",   Y5Button, ChoiceY5)
---   ]
-
 initialState :: DisplayState
 initialState =
-  PickXCoord $ D.dialog (Just $ str "Title") (Just ((), [("A", (), ChoiceXA)])) 50
+  PickXCoord $ D.dialog (Just $ str "Title") (Just (XAButton, xPlacementChoices)) 50
 
 theMap :: A.AttrMap
 theMap = A.attrMap V.defAttr
@@ -104,7 +75,7 @@ theMap = A.attrMap V.defAttr
     , (D.buttonSelectedAttr, bg V.yellow)
     ]
 
-appEvent :: BrickEvent () e -> T.EventM () (DisplayState) ()
+appEvent :: BrickEvent DisplayName e -> T.EventM DisplayName DisplayState ()
 appEvent (VtyEvent ev) =
     case ev of
         V.EvKey V.KEsc [] -> M.halt
@@ -113,7 +84,7 @@ appEvent (VtyEvent ev) =
 appEvent _ = return ()
 
 -- App state event name
-theApp :: M.App DisplayState e ()
+theApp :: M.App DisplayState e DisplayName
 theApp =
     M.App { M.appDraw = drawUI
           , M.appChooseCursor = M.showFirstCursor
