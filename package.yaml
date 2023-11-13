@@ -28,6 +28,9 @@ dependencies:
 - mtl
 - text
 - split
+- microlens
+- microlens-mtl
+- microlens-th
 
 ghc-options:
 - -Wall

@@ -23,5 +23,5 @@ renderBoard :: Board -> Widget ()
 renderBoard board = renderTable $ table $
   chunksOf 5 $ map (renderSpace board) [Position (x, y) | y <- reverse [Y1 .. Y5], x <- [XA .. XE]]
 
-renderSpace :: Board -> Position -> Widget ()
+renderSpace :: Board -> Position -> Widget n
 renderSpace _ position  = hLimit 20 $ vLimit 10 $ center (txt $ T.pack $ show position)
