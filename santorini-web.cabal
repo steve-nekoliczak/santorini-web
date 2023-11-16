@@ -4,11 +4,11 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 
-name:           santorini-cli
+name:           santorini-web
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/steve-nekoliczak/santorini-cli#readme>
-homepage:       https://github.com/steve-nekoliczak/santorini-cli#readme
-bug-reports:    https://github.com/steve-nekoliczak/santorini-cli/issues
+description:    Please see the README on GitHub at <https://github.com/steve-nekoliczak/santorini-web#readme>
+homepage:       https://github.com/steve-nekoliczak/santorini-web#readme
+bug-reports:    https://github.com/steve-nekoliczak/santorini-web/issues
 author:         Steve Nekoliczak
 maintainer:     steve.nekoliczak@protonmail.com
 license:        BSD3
@@ -20,7 +20,7 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/steve-nekoliczak/santorini-cli
+  location: https://github.com/steve-nekoliczak/santorini-web
 
 library
   exposed-modules:
@@ -33,7 +33,7 @@ library
       Widgets.GameWidget
       Widgets.HUDWidget
   other-modules:
-      Paths_santorini_cli
+      Paths_santorini_web
   hs-source-dirs:
       src
   default-extensions:
@@ -51,10 +51,10 @@ library
     , vty
   default-language: Haskell2010
 
-executable santorini-cli-exe
+executable santorini-web-exe
   main-is: Main.hs
   other-modules:
-      Paths_santorini_cli
+      Paths_santorini_web
   hs-source-dirs:
       app
   default-extensions:
@@ -66,20 +66,20 @@ executable santorini-cli-exe
     , containers
     , hspec
     , mtl
-    , santorini-cli
+    , santorini-web
     , split
     , text
     , transformers
     , vty
   default-language: Haskell2010
 
-test-suite santorini-cli-test
+test-suite santorini-web-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
       EngineSpec
       BoardFactory
-      Paths_santorini_cli
+      Paths_santorini_web
   hs-source-dirs:
       test
       test/factory
@@ -92,7 +92,7 @@ test-suite santorini-cli-test
     , containers
     , hspec
     , mtl
-    , santorini-cli
+    , santorini-web
     , split
     , text
     , transformers
