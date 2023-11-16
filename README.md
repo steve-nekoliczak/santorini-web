@@ -1,3 +1,3 @@
 # `santorini-cli`
 
-`santorini-cli` is a command-line interface version of the [Santorini](https://en.wikipedia.org/wiki/Santorini_(game)) board game written in Haskell.
+`santorini-cli` is a web version of the [Santorini](https://en.wikipedia.org/wiki/Santorini_(game)) board game written in Haskell.
