@@ -1,10 +1,11 @@
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module BoardFactory (emptyBoardFactory, modifyEmptyBoard) where
+module Test.Factory.BoardFactory (emptyBoardFactory, modifyEmptyBoard) where
 
 import Data.Map
-import Engine
-import Lib
+
+import Application.Game.Engine
+import Application.Helper.Map
 
 emptyBoardFactory :: Board
 emptyBoardFactory = Board emptyGrid unplacedWorkers

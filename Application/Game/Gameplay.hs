@@ -24,12 +24,12 @@ main = do
   let startGame = gameplayLoopT emptyBoard
   let initialState = PlaceWorkers
   newGame <- runStateT startGame initialState
-  putStrLn $ show $ fst newGame
+  print $ fst newGame
   return ()
 
 gameplayLoopT :: Board -> GameStateT
 gameplayLoopT board = do
-  liftIO $ putStrLn $ show board
+  liftIO $ print board
 
   state' <- get
 
@@ -43,7 +43,7 @@ gameplayLoopT board = do
   stateAfterAction <- get
 
   case boardAfterAction of
-    Left errorMessage   -> (liftIO $ print errorMessage) >> gameplayLoopT board
+    Left errorMessage   -> liftIO (print errorMessage) >> gameplayLoopT board
     Right newBoard      ->
       case stateAfterAction of
         GameOver        -> return boardAfterAction
@@ -107,5 +107,4 @@ readWorker message = do
 readInput :: String -> BaseStateT String
 readInput message = do
   liftIO $ print message
-  input <- liftIO $ getLine
-  return input
+  liftIO getLine
