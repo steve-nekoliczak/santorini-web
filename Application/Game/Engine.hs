@@ -1,7 +1,7 @@
 -- HACK: This is here to silence linter warnings.
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module Engine
+module Application.Game.Engine
   ( XCoord (..)
   , YCoord (..)
   , Position (..)
@@ -24,8 +24,10 @@ module Engine
   ) where
 
 import Data.Map (Map, (!), fromList, insert)
+import Data.Text (Text)
+import Prelude
 
-import Lib (insertMany)
+import Application.Helper.Map (insertMany)
 
 data BoardError = BuildError String
                 | MoveError String

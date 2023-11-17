@@ -21,12 +21,18 @@
                         # Native dependencies, e.g. imagemagick
                     ];
                     haskellPackages = p: with p; [
-                        # Haskell dependencies go here
+                        # Default IHP dependencies
                         p.ihp
                         cabal-install
                         base
                         wai
                         text
+                        # santorini-web dependencies
+                        containers
+                        hspec
+                        mtl
+                        split
+                        transformers
                     ];
                 };
             };

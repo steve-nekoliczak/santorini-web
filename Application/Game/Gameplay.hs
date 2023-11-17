@@ -1,11 +1,12 @@
-module Gameplay
+module Application.Game.Gameplay
   (
   ) where
 
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.Trans.State (StateT, get, put, runStateT)
+import Prelude
 
-import Engine
+import Application.Game.Engine
 
 data GameState =
     PlaceWorkers

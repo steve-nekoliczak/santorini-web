@@ -26,3 +26,6 @@ IHP
 .devenv*
 devenv.local.nix
 .direnv
+
+# Vim files
+*.vim
