@@ -4,7 +4,7 @@ module Application.Helper.Map
 
 import Data.Ord
 import Data.Map (Map, insert)
+import Prelude
 
-insertMany :: Ord k => [(k, a)] -> (Map k a) -> (Map k a)
--- insertMany kvs m = foldr (\(k, v) acc -> insert k v acc) m kvs
-insertMany kvs m = m
+insertMany :: Ord k => [(k, a)] -> Map k a -> Map k a
+insertMany kvs m = foldr (\(k, v) acc -> insert k v acc) m kvs
