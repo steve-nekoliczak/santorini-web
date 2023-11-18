@@ -3,6 +3,7 @@
 module Test.Factory.BoardFactory (emptyBoardFactory, modifyEmptyBoard) where
 
 import Data.Map
+import Prelude
 
 import Application.Game.Engine
 import Application.Helper.Map

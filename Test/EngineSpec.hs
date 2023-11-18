@@ -1,11 +1,12 @@
 -- HACK: This is here to silence linter warnings.
 {-# LANGUAGE OverloadedRecordDot #-}
 
-module EngineSpec (spec) where
+module Test.EngineSpec (spec) where
 
 import Test.Hspec
 import Data.Either
 import Data.Map hiding (map)
+import Prelude
 
 import Application.Game.Engine
 import Test.Factory.BoardFactory
